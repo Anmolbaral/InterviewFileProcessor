@@ -33,3 +33,7 @@ dist/
 # Local machine files
 .DS_Store
 *.log
+
+# Local planning drafts, kept out of Git until reviewed
+/MVP-BUILD-BRIEF.md
+/BUILD-TEST-ROADMAP.md
