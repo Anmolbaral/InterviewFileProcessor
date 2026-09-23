@@ -1,0 +1,35 @@
+# Private transcripts, extracted content, research notes, and local references
+/analysis/
+/sources/
+/data/
+/references/
+ponytail-reference/
+ponytail-references/
+*.docx
+*.DOCX
+
+# Credentials and local configuration (keep example files shareable)
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Python environments and generated caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Frontend dependencies and build output
+node_modules/
+.next/
+dist/
+
+# Local machine files
+.DS_Store
+*.log
