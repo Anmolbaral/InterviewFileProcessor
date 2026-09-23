@@ -102,6 +102,14 @@ After each milestone: check it, correct the largest observed failure, then conti
 - One meaningful check per nontrivial piece of logic, not per-function suites. Prefer the supplied files over invented fixtures wherever they can exercise the behavior; use the existing fixture for edge cases they cannot.
 - Before reporting done: `pyflakes parser.py test_parser.py`, `python -m unittest -v test_parser.py`, `python parser.py`, then `python parser.py --check`. Python 3.11 is the supported runtime; a 3.13 run is optional.
 
+### Working practices
+
+These come from the systematic-debugging, verification-before-completion, and test-driven-development skills. They are not installed here, so follow them as rules rather than invoking them.
+
+- **Systematic debugging.** Reproduce the failure first, then read the whole code path it touches before editing. Form one hypothesis and confirm it with fresh evidence: a probe script, a database query, or a failing test. Fix at the cause, and check every caller of the function you change. The parser's two-reader text check and the FTS5 read-only probe both came from this loop; a fix that only silences the reported symptom is a second bug.
+- **Verification before completion.** "Done" requires evidence produced in the current session: the four commands under Tests, plus a run of the affected command or query, with their actual output. A check that was planned but not run is reported as not run. A claim the evidence does not cover is reported as unverified, not omitted.
+- **Test-driven development.** For a bug fix or new behavior in `parser.py`, write the failing test in `test_parser.py` first, reusing the existing fixture or the supplied files, then make it pass with the smallest change, then simplify with the tests still green. Documentation-only changes need a link and content check, not a test.
+
 ### Docs
 
 - README is the living plan and the only tracked product document. Keep it lean and state only what a passing test or a run performed in the session backs. Planning drafts stay local and ignored until reviewed.
@@ -109,7 +117,7 @@ After each milestone: check it, correct the largest observed failure, then conti
 
 ## Skill bank
 
-Claude Code sessions in this repository have skills that package expert instructions for a kind of task. Check this list when judging whether something is feasible before saying no or building it from scratch, and invoke a skill with the Skill tool or `/name` when the task matches. Skills not listed here, such as the finance, resume, and art skills, are irrelevant to this project. Codex and other tools do not have them; the local Ponytail reference is the one that works everywhere.
+Claude Code sessions in this repository have skills that package expert instructions for a kind of task. Check this list when judging whether something is feasible before saying no or building it from scratch, and invoke a skill with the Skill tool or `/name` when the task matches. Skills not listed here, such as the finance, resume, and art skills, are irrelevant to this project. The debugging, verification, and TDD practices under Repository conventions are followed as rules because those skills are not installed here. Codex and other tools do not have them; the local Ponytail reference is the one that works everywhere.
 
 | Skill | Use it when | Notes |
 | --- | --- | --- |
