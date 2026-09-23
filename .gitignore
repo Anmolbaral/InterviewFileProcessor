@@ -37,3 +37,7 @@ dist/
 # Local planning drafts, kept out of Git until reviewed
 /MVP-BUILD-BRIEF.md
 /BUILD-TEST-ROADMAP.md
+
+# Impeccable design tool: installed locally with npx, never tracked
+/.claude/skills/impeccable/
+/.claude/agents/impeccable-*.md
