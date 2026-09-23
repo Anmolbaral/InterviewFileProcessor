@@ -475,15 +475,34 @@ def save_chunks(connection: sqlite3.Connection, documents: list[dict]) -> None:
     connection.execute("INSERT INTO chunks_fts (chunk_id, text, header) SELECT id, text, header FROM chunks")
 
 
-def render_passages(connection: sqlite3.Connection, passage_ids: list[str]) -> list[dict]:
-    """Each passage with its own speaker, timestamp, citation, and literal text, in the given order. Every
-    display of an exchange and every model prompt built from one goes through here, never through chunk text."""
+def render_passages(connection: sqlite3.Connection, passage_ids: list[str], *,
+                    expected_fingerprints: dict[str, str] | None = None) -> list[dict]:
+    """Attributed evidence in source order, including across sections and documents.
+    Nonempty requests require an expected extraction fingerprint for every document; unknown/duplicate IDs,
+    missing expectations, and version mismatches fail. Run the read-only integrity check before each evidence
+    batch: this function compares stored fingerprints, not the original files or a new hash of stored text.
+    Quote through these canonical passages, never chunk text or headers."""
+    if len(set(passage_ids)) != len(passage_ids):
+        raise ValueError("duplicate passage IDs requested")
     if not passage_ids:
         return []
-    rows = {row["id"]: row for row in read_rows(
-        connection, "SELECT id, citation_id, speaker_label, timestamp_raw, text FROM passages "
-                    f"WHERE id IN ({', '.join('?' * len(passage_ids))})", *passage_ids)}
-    return [rows[passage_id] for passage_id in passage_ids if passage_id in rows]
+    rows = read_rows(
+        connection,
+        "SELECT p.id, p.document_id, p.citation_id, p.speaker_label, p.timestamp_raw, p.text, "
+        "d.source_sha256, d.extraction_sha256 FROM passages p JOIN documents d ON d.id = p.document_id "
+        f"WHERE p.id IN ({', '.join('?' * len(passage_ids))}) ORDER BY d.position, p.paragraph_index", *passage_ids)
+    missing = sorted(set(passage_ids) - {row["id"] for row in rows})
+    if missing:
+        raise ValueError(f"unknown passage IDs: {', '.join(missing)}")
+    for row in rows:
+        expected = (expected_fingerprints or {}).get(row["document_id"])
+        if expected is None:
+            raise ValueError(f"{row['document_id']}: expected extraction fingerprint required for every requested "
+                             "document; verify the corpus before reading evidence")
+        if expected != row["extraction_sha256"]:
+            raise ValueError(f"{row['document_id']}: expected extraction fingerprint differs from the stored one; "
+                             "run --check and revalidate dependent facts before using this evidence")
+    return rows
 
 
 def search(connection: sqlite3.Connection, query: str, *, document_id: str | None = None,
@@ -586,11 +605,13 @@ def main() -> int:
     args = command.parse_args()
     try:
         if args.search is not None:
+            corpus, _ = run(args.manifest, args.database, check=True)
+            expected = {document.id: document.extraction_sha256 for document in corpus.documents}
             with closing(open_database(args.database, readonly=True)) as connection:
                 for hit in search(connection, args.search):
                     print(f"{hit['id']}  {hit['section_heading'] or '(no section)'}  rank={hit['rank']:.2f}")
                     print(f"  header: {hit['header']}  <- {hit['header_passage_ids']}")
-                    for passage in render_passages(connection, hit["passage_ids"]):
+                    for passage in render_passages(connection, hit["passage_ids"], expected_fingerprints=expected):
                         print(f"  {passage['citation_id']} {passage['speaker_label'] or '-'} "
                               f"{passage['timestamp_raw'] or '-'}: {passage['text'][:80]!r}")
             return 0

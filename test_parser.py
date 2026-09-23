@@ -3,6 +3,8 @@
 import hashlib
 import json
 import sqlite3
+import subprocess
+import sys
 import tempfile
 import unittest
 import zipfile
@@ -221,7 +223,8 @@ class ParserTests(unittest.TestCase):
             self.assertEqual(chunk["text"], "\n".join(passages[i].text for i in chunk["passage_ids"]))
         self.assertEqual([c["id"] for c in neighbors(connection, "E1:X0001")], ["E1:X0001"])  # next is another section
         self.assertEqual(neighbors(connection, "E1:X9999"), [])
-        rendered = render_passages(connection, ["E1:B0004", "E1:B0005"])
+        rendered = render_passages(connection, ["E1:B0004", "E1:B0005"],
+                                   expected_fingerprints={"E1": corpus.documents[0].extraction_sha256})
         self.assertEqual([(r["citation_id"], r["speaker_label"], r["timestamp_raw"]) for r in rendered],
                          [("E1:P003", "Expert 1", "00:00:05"), ("E1:P004", "Expert 1", "00:00:05")])
         self.assertEqual(rendered[0]["text"], "  Alpha\tBeta\nGamma  ")
@@ -249,6 +252,74 @@ class ParserTests(unittest.TestCase):
         self.assertEqual([connection.execute(f"SELECT count(*) FROM {t}").fetchone()[0]
                           for t in ("chunks", "chunk_passages")], [0, 0])
         connection.close()
+
+    def test_render_passages_fails_on_missing_duplicate_or_stale_evidence(self):
+        _, manifest = self.fixture()
+        database = self.directory / "transcripts.sqlite"
+        corpus, _ = run(manifest, database)
+        document = corpus.documents[0]
+        expected = {"E1": document.extraction_sha256}
+        connection = open_database(database, readonly=True)
+        self.addCleanup(connection.close)
+        rows = render_passages(connection, ["E1:B0007", "E1:B0005", "E1:B0003", "E1:B0004"],
+                               expected_fingerprints=expected)  # shuffled input spanning two sections
+        self.assertEqual([r["id"] for r in rows], ["E1:B0003", "E1:B0004", "E1:B0005", "E1:B0007"])
+        self.assertEqual([(r["citation_id"], r["speaker_label"], r["timestamp_raw"]) for r in rows],
+                         [("E1:P002", "Expert 1", "00:00:05"), ("E1:P003", "Expert 1", "00:00:05"),
+                          ("E1:P004", "Expert 1", "00:00:05"), ("E1:P006", None, None)])
+        self.assertEqual(rows[1]["text"], "  Alpha\tBeta\nGamma  ")
+        self.assertEqual({(r["document_id"], r["source_sha256"], r["extraction_sha256"]) for r in rows},
+                         {("E1", document.source_sha256, document.extraction_sha256)})
+        self.assertEqual(render_passages(connection, []), [])
+        for ids in (["E1:B0004", "E1:B9999"], ["E1:B0004", "E1:B0004"]):
+            with self.subTest(ids=ids), self.assertRaises(ValueError):
+                render_passages(connection, ids, expected_fingerprints=expected)
+        with self.assertRaisesRegex(ValueError, "expected.*fingerprint"):
+            render_passages(connection, ["E1:B0004"])
+        for invalid in (None, {}, {"E2": document.extraction_sha256}, {"E1": None}, {"E1": "0" * 64}):
+            with self.subTest(expected=invalid), self.assertRaisesRegex(ValueError, "expected.*fingerprint"):
+                render_passages(connection, ["E1:B0004"], expected_fingerprints=invalid)
+
+    def test_search_cli_checks_integrity_before_returning_evidence(self):
+        source, manifest = self.fixture()
+        database = self.directory / "transcripts.sqlite"
+        run(manifest, database)
+        pristine = database.read_bytes()
+
+        def invoke(query="Gamma"):
+            return subprocess.run([sys.executable, str(Path(__file__).with_name("parser.py")),
+                                   "--manifest", str(manifest), "--database", str(database), "--search", query],
+                                  capture_output=True, text=True, check=False)
+
+        result = invoke()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("E1:P003 Expert 1", result.stdout)
+        self.assertEqual(database.read_bytes(), pristine)
+        for statement in ("UPDATE passages SET text = 'Tampered' WHERE id = 'E1:B0004'",
+                          "UPDATE chunks_fts SET text = 'Tampered' WHERE chunk_id = 'E1:X0001'"):
+            database.write_bytes(pristine)
+            connection = open_database(database)
+            with connection:
+                connection.execute(statement)
+            connection.close()
+            before = database.read_bytes()
+            for query in ("Gamma", "nonexistent"):
+                with self.subTest(statement=statement, query=query):
+                    result = invoke(query)
+                    self.assertEqual(result.returncode, 1, result.stdout)
+                    self.assertIn("Parser failed:", result.stderr)
+                    self.assertEqual(result.stdout, "")
+                    self.assertEqual(database.read_bytes(), before)
+        database.write_bytes(pristine)
+        path = self.directory / source.source
+        document = Document(path)
+        document.add_paragraph("A source change after the database was built.")
+        document.save(path)
+        result = invoke()
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("Parser failed:", result.stderr)
+        self.assertEqual(result.stdout, "")
+        self.assertEqual(database.read_bytes(), pristine)
 
     def test_failure_preserves_existing_database(self):
         _, manifest = self.fixture()
@@ -306,6 +377,7 @@ class ProvidedTranscriptTests(unittest.TestCase):
 
     def test_exchange_chunks_search_and_context_on_supplied_files(self):
         dump = self.corpus.model_dump()
+        expected = {d.id: d.extraction_sha256 for d in self.corpus.documents}
         with tempfile.TemporaryDirectory() as directory:
             connection = open_database(Path(directory) / "transcripts.sqlite")
             save_corpus(connection, dump)
@@ -326,8 +398,19 @@ class ProvidedTranscriptTests(unittest.TestCase):
             self.assertEqual(search(connection, '"forty dollars per agent"', document_id="E3")[0]["id"], chunk["id"])
             self.assertIn(chunk["id"], [h["id"] for h in search(connection, "Solara pricing", document_id="E3",
                                                                    limit=50)])  # via the header; rank not asserted
-            self.assertEqual([(r["speaker_label"], r["citation_id"]) for r in render_passages(connection, chunk["passage_ids"])],
+            rendered = render_passages(connection, chunk["passage_ids"], expected_fingerprints=expected)
+            self.assertEqual([(r["speaker_label"], r["citation_id"]) for r in rendered],
                              [("AI Interviewer", "E3:P096"), ("Expert 3", "E3:P098")])
+            # Company context and later corrections remain accessible across sections and interviews.
+            citations = {p.citation_id: p for d in self.corpus.documents for p in d.passages}
+            ordered = ["E1:P016", "E1:P021", "E1:P049", "E2:P089", "E2:P139"]
+            ids = [citations[c].id for c in reversed(ordered)]
+            self.assertNotEqual(citations["E2:P089"].section_id, citations["E2:P139"].section_id)
+            with self.assertRaisesRegex(ValueError, "E2.*expected.*fingerprint"):
+                render_passages(connection, ids, expected_fingerprints={"E1": expected["E1"]})
+            rendered = render_passages(connection, ids, expected_fingerprints=expected)
+            self.assertEqual([r["citation_id"] for r in rendered], ordered)
+            self.assertEqual([r["text"] for r in rendered], [citations[c].text for c in ordered])
             around = neighbors(connection, chunk["id"])
             self.assertEqual([c["id"] for c in around],
                              [c["id"] for c in per_document[2] if c["section_id"] == chunk["section_id"]
