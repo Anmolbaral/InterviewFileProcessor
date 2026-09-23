@@ -78,63 +78,48 @@ After each milestone: check it, correct the largest observed failure, then conti
 
 ## Repository conventions
 
-### Commits and Git
+### Commits
 
-- Commit only when asked. Before committing, run the checks under Tests and inspect `git status --short`. Never stage `analysis/`, `data/`, DOCX files, credentials, or the ignored planning drafts.
-- Message format: a conventional prefix, lowercase imperative, one line under 72 characters, with an optional short body saying what changed and why. Prefixes in use: `feat:`, `fix:`, `docs:`, `test:`, `chore:`, `refactor:`.
-- One logical change per commit. Keep docs and housekeeping separate from code changes.
-- No tool, assistant, or AI attribution anywhere in commit messages, bodies, or trailers.
-- Work on `main` and push fast-forward to `origin` (github.com/Anmolbaral/InterviewFileProcessor). Never force-push or rewrite pushed history.
+- Commit and push only when the user asks, never as a side effect of finishing work. Inspect `git status --short` first; `analysis/`, `data/`, DOCX files, credentials, and the ignored planning drafts are never staged.
+- One line, lowercase imperative, under 72 characters, with a conventional prefix: `feat:`, `fix:`, `chore:`, `refactor:`, `test:`. Documentation changes use `chore:`. Add a short body only when the title cannot carry the why.
+- One logical change per commit. No tool or AI attribution in messages or trailers. Fast-forward pushes to `origin/main`; never force-push.
 
 ### Code
 
-- Python 3.10 or newer, standard library first. The only third-party dependencies are `python-docx` and `pydantic`, pinned in `requirements.txt`; add another only for a demonstrated need, and pin it.
-- One module, `parser.py`, until a second is unavoidable. Small plain functions over classes; no speculative abstractions, adapters, interfaces, or service layers.
-- Records are strict pydantic models with `extra="forbid"`. Invariants live in validators. Fingerprints are SHA-256 over sorted, indented JSON with volatile values excluded.
-- Canonical text is never normalized. Derived data such as chunks and the keyword index is rebuilt wholesale on each run and verified by `--check`, which opens the database read-only and never writes.
-- Fail closed: raise `ValueError` with an actionable message, never write partial output, and let `main()` turn the fixed exception set into exit code 1.
-- IDs: documents `E<n>`, passages `E1:B0032`, legacy citations `E1:P021`, chunks `E1:X0024`. Passages are the only citation unit; quote and attribute from `passages` rows through `render_passages`, never from chunk text or headers.
-- Style: 120-character lines, double quotes, f-strings, type hints on public functions, docstrings only where they explain something non-obvious. Mark a deliberate simplification with a `# ponytail:` comment naming the ceiling and the upgrade path.
+- Python 3.10 or newer, standard library first. The only dependencies are `python-docx` and `pydantic`, pinned; a new one needs a demonstrated need.
+- One module, `parser.py`, plain functions, no speculative abstractions. Strict pydantic records with invariants in validators; SHA-256 fingerprints over sorted JSON.
+- Canonical text is never normalized. Derived rows are rebuilt each run and verified by the read-only `--check`. Fail closed with an actionable `ValueError`.
+- IDs: documents `E<n>`, passages `E1:B0032`, citations `E1:P021`, chunks `E1:X0024`. Quote and attribute through `render_passages`, never from chunk text or headers.
+- 120-character lines, double quotes, type hints on public functions, docstrings only for the non-obvious. A `# ponytail:` comment marks a deliberate simplification and its ceiling.
 
 ### Tests
 
-- `unittest` only, in `test_parser.py`. Synthetic fixtures are built with python-docx in temporary directories and need no private files. Real-file tests are gated on the private manifest, skip when it is absent, and fail rather than skip when its files are missing or changed.
-- One meaningful check per nontrivial piece of logic, not per-function suites. Prefer the supplied files over invented fixtures wherever they can exercise the behavior; use the existing fixture for edge cases they cannot.
-- Before reporting done: `pyflakes parser.py test_parser.py`, `python -m unittest -v test_parser.py`, `python parser.py`, then `python parser.py --check`. Python 3.11 is the supported runtime; a 3.13 run is optional.
-
-### Working practices
-
-These come from the systematic-debugging, verification-before-completion, and test-driven-development skills. They are not installed here, so follow them as rules rather than invoking them.
-
-- **Systematic debugging.** Reproduce the failure first, then read the whole code path it touches before editing. Form one hypothesis and confirm it with fresh evidence: a probe script, a database query, or a failing test. Fix at the cause, and check every caller of the function you change. The parser's two-reader text check and the FTS5 read-only probe both came from this loop; a fix that only silences the reported symptom is a second bug.
-- **Verification before completion.** "Done" requires evidence produced in the current session: the four commands under Tests, plus a run of the affected command or query, with their actual output. A check that was planned but not run is reported as not run. A claim the evidence does not cover is reported as unverified, not omitted.
-- **Test-driven development.** For a bug fix or new behavior in `parser.py`, write the failing test in `test_parser.py` first, reusing the existing fixture or the supplied files, then make it pass with the smallest change, then simplify with the tests still green. Documentation-only changes need a link and content check, not a test.
+- `unittest` in `test_parser.py`: synthetic fixtures via python-docx in temporary directories; real-file tests gated on the private manifest, failing rather than skipping when its files are missing. One meaningful check per piece of logic. Prefer the supplied files; use the existing fixture for edge cases they lack.
+- Definition of done, on Python 3.11: `pyflakes parser.py test_parser.py`, `python -m unittest -v test_parser.py`, `python parser.py`, `python parser.py --check`.
 
 ### Docs
 
-- README is the living plan and the only tracked product document. Keep it lean and state only what a passing test or a run performed in the session backs. Planning drafts stay local and ignored until reviewed.
-- Update the README in the same change that alters behavior or commands. This file holds rules; the README holds what ships and what comes next. Do not duplicate between them.
+- README is the living plan and the only tracked product document. It states only what a passing test or a run in the session backs, and it changes in the same commit as the behavior. Rules live here; nothing is duplicated between the two.
+
+### Working practices
+
+Project skills in `.claude/skills/` hold the procedures; invoke them by name. `systematic-debugging` before changing code for any failure or surprise. `verification-before-completion` before any "done" or any commit. `test-driven-development` for any change to `parser.py`.
 
 ## Skill bank
 
-Claude Code sessions in this repository have skills that package expert instructions for a kind of task. Check this list when judging whether something is feasible before saying no or building it from scratch, and invoke a skill with the Skill tool or `/name` when the task matches. Skills not listed here, such as the finance, resume, and art skills, are irrelevant to this project. The debugging, verification, and TDD practices under Repository conventions are followed as rules because those skills are not installed here. Codex and other tools do not have them; the local Ponytail reference is the one that works everywhere.
+Skills package expert procedures and are invoked with the Skill tool or `/name`. Check this list when judging feasibility before saying no or building from scratch. Project skills live in `.claude/skills/` and travel with the repository; the others exist only in Claude Code sessions. Ponytail is a local reference, not an installed skill: read `analysis/ponytail-reference/skills/ponytail/SKILL.md` for every coding decision.
 
-| Skill | Use it when | Notes |
-| --- | --- | --- |
-| `claude-api` | Before writing or changing any code that calls Claude or the Anthropic SDK, and before answering any question about models, pricing, limits, or caching. | Never answer those from memory. Model IDs and parameters come from the skill. |
-| `code-review` | Before committing a change to `parser.py` or `test_parser.py`; reviews the diff for correctness bugs at a chosen effort level. | Read the findings before using `--fix`. |
-| `simplify` | After a change lands and tests pass, to remove duplication, over-building, or wrong altitude. | Quality only; it does not hunt bugs. |
-| `security-review` | Before hosting a demo, adding model credentials, or exposing any upload or question path. | Credentials stay server-side and out of exports. |
-| `run` | Once a frontend or server exists, to launch it and confirm a change in the real app rather than only in tests. | |
-| Ponytail, local reference | Every coding decision. Read `analysis/ponytail-reference/skills/ponytail/SKILL.md`. | Not an installed skill; do not install it globally. |
-| `anthropic-skills:docx` | Reading or producing Word files beyond what `parser.py` does with python-docx, such as a `.docx` export or inspecting an unfamiliar transcript layout. | The parser stays the ingestion path. |
-| `anthropic-skills:pdf` | A transcript arrives as a PDF. | A new input type needs its own coverage review first. |
-| `anthropic-skills:xlsx` | Excel export of findings or comparison rows when the partner's template calls for it. | Formulas over hardcoded values. |
-| `anthropic-skills:pptx` | Not in the take-home; slide generation is excluded. | Later, and only against the partner's real template. |
-| `dataviz` | Any chart in the frontend or an artifact. Case counts only; never a market-share chart. | Load it before writing the first line of chart code. |
-| `artifact-design`, `anthropic-skills:web-artifacts-builder` | A shareable HTML prototype or mockup of the workspace for review. | Not a replacement for the application if one exists. |
-| `anthropic-skills:skill-creator` | The evidence-workspace rules should become a reusable project skill. | Later. |
-| Explore and Plan subagents | Bounded read-only research or design before a large change. | Keep one owner of shared records; subagents report, they do not decide scope. |
+| Skill | Use it when |
+| --- | --- |
+| `systematic-debugging`, `verification-before-completion`, `test-driven-development` (project) | See Working practices. |
+| `claude-api` | Before any code or answer involving Claude models, pricing, limits, or caching. Never from memory. |
+| `code-review` | Before committing a change to `parser.py` or `test_parser.py`. |
+| `simplify` | After tests pass, to cut duplication or over-building. |
+| `security-review` | Before hosting, adding credentials, or exposing an upload or question path. |
+| `run` | Once an app exists, to see a change working for real. |
+| `anthropic-skills:docx`, `pdf`, `xlsx` | Word files beyond the parser's own reading, a PDF transcript, or an Excel export. `pptx` is excluded for the take-home. |
+| `dataviz`, `artifact-design`, `anthropic-skills:web-artifacts-builder` | A chart (case counts only, never market share) or a shareable HTML mockup. |
+| Explore and Plan subagents | Bounded read-only research or design before a large change; they report, they do not set scope. |
 
 ## Verification and commands
 
