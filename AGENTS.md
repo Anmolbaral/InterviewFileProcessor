@@ -24,13 +24,12 @@ At the start of implementation, inspect the actual files and any existing applic
 
 | Source | Use |
 | --- | --- |
-| [Build/test roadmap](BUILD-TEST-ROADMAP.md) | Milestones, frontend behaviors, evaluation, submission, and next priorities. |
-| [MVP brief](MVP-BUILD-BRIEF.md) | Proposed data records, company cases, architecture, and scope boundaries. |
+| [README](README.md) | The living plan: what ships, how to run and verify it, the database contract, and the next step. |
 | [Source manifest](analysis/transcripts/manifest.json) | Original DOCX paths, source hashes, and exploratory extract paths. |
 | [Evidence audit](analysis/evidence-review.md) | Known attribution risks, qualifiers, corrections, and source pointers; verify against the transcripts. |
 | [Ponytail skill](analysis/ponytail-reference/skills/ponytail/SKILL.md) | Minimal-correct-scope and reuse rules for implementation decisions. This is a local reference, not proof of plugin installation. |
 
-Current user instructions determine requested scope within higher-priority instructions. This file governs implementation choices here; the roadmap gives execution order and the brief gives design detail where consistent. Original transcripts establish evidence, while the audit and prepared data are interpretations. Read applicable source passages before changing claims. Do not reload every reference for an unrelated small edit.
+Current user instructions determine requested scope within higher-priority instructions. This file governs implementation choices here; the README records what ships and what comes next. Original transcripts establish evidence, while the audit and prepared data are interpretations. Read applicable source passages before changing claims. Do not reload every reference for an unrelated small edit.
 
 ## Build order
 
@@ -41,7 +40,7 @@ Current user instructions determine requested scope within higher-priority instr
 5. Add bounded live questions only after the core works. Generate from selected/retrieved evidence, with explicit gaps; do not rely on one undifferentiated whole-corpus prompt.
 6. Automate further intake or evaluate LightRAG only for an observed need and within remaining time. Never make optional retrieval infrastructure block the core demo.
 
-After each milestone: check it, correct the largest observed failure, then continue. Use the roadmap's times as estimates, not a reason to skip verification or silently exceed six hours. State actual time used when known; do not invent it.
+After each milestone: check it, correct the largest observed failure, then continue. Treat milestone time estimates as estimates, not a reason to skip verification or silently exceed six hours. State actual time used when known; do not invent it.
 
 ## Evidence invariants
 
@@ -91,13 +90,13 @@ Minimum grounded acceptance checks:
 5. Market share remains unestimated and BMC's conflicting timing accounts remain unresolved unless actual evidence reconciles them.
 6. Compare → inspect → select → edit → export works; citations and caveats survive export and filters preserve selection. If live generation ships, an invalid source or unavailable model cannot masquerade as a supported answer.
 
-Use the audit and roadmap for exact passages and expanded checks. Inspect the exported artifact, not only the success notification. After a fix, rerun the failing case and affected checks. Do not claim complete accuracy from a small evaluation set.
+Use the audit for exact passages and expanded checks. Inspect the exported artifact, not only the success notification. After a fix, rerun the failing case and affected checks. Do not claim complete accuracy from a small evaluation set.
 
 ## Collaboration and handoff
 
 - Keep one owner for shared records and integration. Delegate bounded independent work with separate file ownership; do not let agents invent competing schemas or frameworks.
 - Give concise progress updates: what now works, evidence from checks, important limitations, and the next step. Report failures and unavailable dependencies honestly.
-- Keep implemented behavior distinct from plans. Update the README/roadmap when a deliberate tradeoff changes what ships; no automatic task creation, publishing, or external messaging is implied.
+- Keep implemented behavior distinct from plans. Update the README when a deliberate tradeoff changes what ships; no automatic task creation, publishing, or external messaging is implied.
 - Finish with the actual prototype/run instructions, a brief product rationale, architecture/data flow, AI-versus-deterministic responsibilities, stored-versus-computed data, checks performed, limitations, and 3–5 prioritized design-partner improvements with reasons.
 - Briefly explain where coding agents helped and how their work was checked. Include a short compare/evidence/edit/export demo path. If the time box prevents completion, deliver the allowed architecture writeup and truthful implementation status.
 

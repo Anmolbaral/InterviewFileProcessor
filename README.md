@@ -79,4 +79,4 @@ All 820 paragraphs are retained and both readers agreed on every one. Interviewe
 - `requirements.txt`: two pinned dependencies.
 - `data/parsed/transcripts.sqlite`: generated, ignored by git.
 
-Next: reviewed source-linked facts as tables referencing `passages.id`. See [AGENTS.md](AGENTS.md), [BUILD-TEST-ROADMAP.md](BUILD-TEST-ROADMAP.md), and [MVP-BUILD-BRIEF.md](MVP-BUILD-BRIEF.md).
+Next: reviewed source-linked facts as tables referencing `passages.id`, then the comparison and evidence frontend. Working rules are in [AGENTS.md](AGENTS.md).
