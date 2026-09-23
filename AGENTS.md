@@ -107,6 +107,27 @@ After each milestone: check it, correct the largest observed failure, then conti
 - README is the living plan and the only tracked product document. Keep it lean and state only what a passing test or a run performed in the session backs. Planning drafts stay local and ignored until reviewed.
 - Update the README in the same change that alters behavior or commands. This file holds rules; the README holds what ships and what comes next. Do not duplicate between them.
 
+## Skill bank
+
+Claude Code sessions in this repository have skills that package expert instructions for a kind of task. Check this list when judging whether something is feasible before saying no or building it from scratch, and invoke a skill with the Skill tool or `/name` when the task matches. Skills not listed here, such as the finance, resume, and art skills, are irrelevant to this project. Codex and other tools do not have them; the local Ponytail reference is the one that works everywhere.
+
+| Skill | Use it when | Notes |
+| --- | --- | --- |
+| `claude-api` | Before writing or changing any code that calls Claude or the Anthropic SDK, and before answering any question about models, pricing, limits, or caching. | Never answer those from memory. Model IDs and parameters come from the skill. |
+| `code-review` | Before committing a change to `parser.py` or `test_parser.py`; reviews the diff for correctness bugs at a chosen effort level. | Read the findings before using `--fix`. |
+| `simplify` | After a change lands and tests pass, to remove duplication, over-building, or wrong altitude. | Quality only; it does not hunt bugs. |
+| `security-review` | Before hosting a demo, adding model credentials, or exposing any upload or question path. | Credentials stay server-side and out of exports. |
+| `run` | Once a frontend or server exists, to launch it and confirm a change in the real app rather than only in tests. | |
+| Ponytail, local reference | Every coding decision. Read `analysis/ponytail-reference/skills/ponytail/SKILL.md`. | Not an installed skill; do not install it globally. |
+| `anthropic-skills:docx` | Reading or producing Word files beyond what `parser.py` does with python-docx, such as a `.docx` export or inspecting an unfamiliar transcript layout. | The parser stays the ingestion path. |
+| `anthropic-skills:pdf` | A transcript arrives as a PDF. | A new input type needs its own coverage review first. |
+| `anthropic-skills:xlsx` | Excel export of findings or comparison rows when the partner's template calls for it. | Formulas over hardcoded values. |
+| `anthropic-skills:pptx` | Not in the take-home; slide generation is excluded. | Later, and only against the partner's real template. |
+| `dataviz` | Any chart in the frontend or an artifact. Case counts only; never a market-share chart. | Load it before writing the first line of chart code. |
+| `artifact-design`, `anthropic-skills:web-artifacts-builder` | A shareable HTML prototype or mockup of the workspace for review. | Not a replacement for the application if one exists. |
+| `anthropic-skills:skill-creator` | The evidence-workspace rules should become a reusable project skill. | Later. |
+| Explore and Plan subagents | Bounded read-only research or design before a large change. | Keep one owner of shared records; subagents report, they do not decide scope. |
+
 ## Verification and commands
 
 Discover real run/check commands from the existing manifests, scripts, and README. Do not invent commands or report a planned check as passed. When scaffolding, document the commands actually added and verified.
