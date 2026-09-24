@@ -1,8 +1,7 @@
 import type { Bundle } from "../types";
 import { companyName } from "../lib/matrix";
 
-/** Everything a careful reader may want but the main screen should not carry: scope, caveats, source versions,
- * processing coverage, and reviewer decisions. */
+/** Scope, caveats, source versions, processing coverage, and reviewer decisions. */
 export function Methods({ bundle, unprocessed }: { bundle: Bundle; unprocessed: string[] }) {
   const runs = bundle.runs.filter((r) => r.batches.length);
   const notes = bundle.contexts.filter((c) => c.review_note);

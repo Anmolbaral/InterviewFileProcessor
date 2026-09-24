@@ -45,7 +45,8 @@ If a current-employer context already exists, reuse it for the continuing curren
 name varies, unless supplied evidence establishes a second current job. When a passage uses another name for a \
 listed company (the transcript's name for an employer the header anonymizes, or a spelling variant), propose it \
 under aliases with the existing context ID and that passage as supporting; an alias records a name the transcript \
-uses, not a verified spelling or legal identity. Keep unresolved naming variation in qualifications as well. If several \
+uses, not a verified spelling or legal identity. Keep unresolved naming variation in qualifications as well. \
+If several \
 listed current contexts could fit and the evidence does not distinguish them, set context_ref to null and explain \
 the ambiguity in qualifications rather than creating another context.
 
@@ -143,9 +144,8 @@ ReviewState = Literal["proposed", "reviewed", "edited", "rejected"]
 
 
 class Quantity(Record):
-    """A number as the source states it. Missing parts stay None; nothing is converted or averaged. Currency is
-    normalized to "dollars" for $, dollar, or USD; a currency, unit, or period taken from the same answer rather than
-    this figure's own words is listed in `carried`, so an inherited value never looks stated."""
+    """A number as the source states it; nothing converted or averaged. `carried` marks values taken from the
+    same answer rather than this figure's own words."""
     raw: str = Field(min_length=1)
     value: float | None = None
     low: float | None = None  # open bounds are allowed: "north of one-fifty" is low=150 with no high
@@ -205,9 +205,7 @@ class CompanyContext(Sourced):
 
 
 class ContextAlias(Sourced):
-    """Another name for a stored company, as a passage in this interview uses it. Company records stay as first
-    proposed; names learned later (the transcript's name for an anonymized header employer, a spelling variant) are
-    appended as these records, each tied to the passage that uses the name."""
+    """Another name for a stored company, tied to the passage that uses it. Company records never change."""
     context_id: str
     alias: str = Field(min_length=1)
 
@@ -228,8 +226,7 @@ class Finding(Sourced):
             raise ValueError("A vendor relationship states the relationship")
         if self.review_state == "reviewed" and self.context_id is None:
             raise ValueError("A reviewed finding names its company context; set context_id first")
-        # vendor stays optional: "the current employer runs a custom ITSM" has no vendor to name;
-        # a pricing finding may carry no figure: "the overrun came from extra seats" is still about cost
+        # vendor and quantity stay optional: a custom ITSM names no vendor; a cost overrun may give no figure
         return self
 
 
@@ -335,12 +332,8 @@ OWN_TIME = re.compile(r"(?<!\ba )(?<!\bper )(?<!/)\b(month|week|year|day|quarter
 
 
 def normalize_quantity(quantity: Quantity, answer: str, *, kind: str) -> Quantity:
-    """Make figures comparable without inventing any, by what the figure is. Its own words set a missing unit:
-    "about seven months" is months, "30-40%" is percent ("tickets a year" is a period, not a unit). Currency is
-    relabeled "dollars" wherever the figure says $, dollar, or USD. Only a price rate (a pricing finding with a number
-    and no unit other than "per ...") borrows from the rest of its answer: currency, and unit and period when the answer
-    names exactly one unit, so per-user and per-agent prices never merge. Counts, durations, ratios, and percentages
-    borrow nothing, and nothing is ever taken from beyond the answer."""
+    """Fill a missing unit from the figure's own words and relabel currency as "dollars". Only a price rate
+    borrows currency, unit, and period from its answer, and a unit only when the answer names exactly one."""
     # ponytail: dollars only, the one currency in these interviews; add a currency table for an observed other one
     update: dict = {}
     carried: list[str] = []
@@ -376,9 +369,7 @@ def normalize_quantity(quantity: Quantity, answer: str, *, kind: str) -> Quantit
 
 
 def model_batches(batches: list[Batch]) -> list[Batch]:
-    """The batches worth a model call. Text before the first heading is the interview's header (an anonymized
-    employer label and a role line): every later batch already carries it as introductory context, and proposing a
-    company from it alone creates a record named only by the anonymized label."""
+    """Batches worth a model call: the header before the first heading already rides along as context."""
     return [batch for batch in batches if batch.section_id is not None]
 
 
@@ -416,7 +407,8 @@ def build_batches(connection: sqlite3.Connection) -> list[Batch]:
     return batches
 
 
-def passage_lines(connection: sqlite3.Connection, ids: list[str], *, expected_fingerprints: dict[str, str]) -> list[str]:
+def passage_lines(connection: sqlite3.Connection, ids: list[str], *,
+                  expected_fingerprints: dict[str, str]) -> list[str]:
     """Canonical passages as the model sees them, in source order: citation ID, speaker, timestamp, text."""
     return [f"[{p['citation_id']}] {p['speaker_label'] or 'unattributed'}"
             f"{' ' + p['timestamp_raw'] if p['timestamp_raw'] else ''}: {p['text']}"
@@ -446,10 +438,8 @@ class Anchor(NamedTuple):
 
 def company_anchors(connection: sqlite3.Connection, contexts: list[CompanyContext], document_id: str
                     ) -> dict[str, Anchor]:
-    """Which company each text passage of one interview is about, from the transcript alone: the interview starts at
-    its current employer, and the latest passage naming exactly one company moves the anchor there; a passage naming
-    several moves nothing. Uses stored company names and aliases, never findings, so a misfiled finding cannot feed
-    back into the input or the check."""
+    """Which company each passage is about: the interview starts at the current employer and moves to the
+    last company named alone. Uses stored names and aliases only, never findings."""
     # ponytail: literal name and alias matching; add cues like "my previous employer" only for an observed miss
     own = [c for c in contexts if c.document_id == document_id and c.review_state != "rejected"]
     if not own:
@@ -468,8 +458,8 @@ def company_anchors(connection: sqlite3.Connection, contexts: list[CompanyContex
 
 
 def attribution_flags(store: sqlite3.Connection, transcripts: sqlite3.Connection) -> dict[str, str]:
-    """Findings filed to a company other than the one the conversation is about, when no supporting passage names
-    the filed company. A flag asks for review; it is not proof of error. Returns {finding ID: reason}."""
+    """Findings filed under a company other than the conversation's anchor, unless a supporting passage
+    names the filed company. A flag asks for review; it is not proof of error."""
     contexts = load_records(store, CompanyContext)
     names = {c.id: c.company_name for c in contexts}
     citations = {row["id"]: row["citation_id"] for row in read_rows(
@@ -485,8 +475,10 @@ def attribution_flags(store: sqlite3.Connection, transcripts: sqlite3.Connection
             continue
         anchor = document[finding.supporting[0]]
         if anchor.context_id not in (None, finding.context_id):
-            where = f" at {citations[anchor.passage_id]}" if anchor.passage_id else " (the interview's starting employer)"
-            flags[finding.id] = (f"filed under {names.get(finding.context_id, finding.context_id)}, but the most recent "
+            where = (f" at {citations[anchor.passage_id]}" if anchor.passage_id
+                     else " (the interview's starting employer)")
+            filed = names.get(finding.context_id, finding.context_id)
+            flags[finding.id] = (f"filed under {filed}, but the most recent "
                                  f"explicit company reference before {citations[finding.supporting[0]]} is "
                                  f"{names[anchor.context_id]}{where}")
     return flags
@@ -558,8 +550,7 @@ TABLES = {CompanyContext: "company_contexts", Finding: "findings", ContextAlias:
 
 
 def load_records(store: sqlite3.Connection, model: type[T], *, hidden_aliases: set[str] = frozenset()) -> list[T]:
-    """Stored records of one kind. Company contexts come with every live alias record's name appended, except
-    the alias IDs in `hidden_aliases`; stores made before aliases existed simply have none."""
+    """Stored records of one kind; companies come with their live alias names, minus `hidden_aliases`."""
     if not store.execute("SELECT 1 FROM sqlite_master WHERE name = ?", (TABLES[model],)).fetchone():
         return []
     records = [model.model_validate_json(row["record"])
@@ -694,14 +685,8 @@ CASE_DOCUMENTS = {"G01/G02": ("E1",), "G02": ("E1",), "G03": ("E1",), "G04": ("E
 
 def evaluate(store: sqlite3.Connection, transcripts: sqlite3.Connection, *, raw: bool = False
              ) -> list[tuple[str, str, str]]:
-    """Fail-closed regression checks for the reviewed high-risk interview distinctions.
-
-    Each row is (case, "pass" | "fail" | "absent" | "not_run", detail). "not_run" means an interview the case reads
-    was never extracted into this store; it never counts as a pass. With `raw`, only the model's own unedited records
-    are scored (rejected ones included), which is what compares prompt versions; the default scores the store as a
-    reader sees it after review. These checks verify source versions, record fields, and evidence roles; they do not
-    replace a reviewer checking whether prose is semantically supported.
-    """
+    """Gold regression cases as (case, "pass" | "fail" | "absent" | "not_run", detail). `raw` scores only
+    unedited model output. Checks fields and citations, not semantic support."""
     check_findings(store, transcripts)
     versions = {row["id"]: (row["source_sha256"], row["extraction_sha256"])
                 for row in read_rows(transcripts, "SELECT id, source_sha256, extraction_sha256 FROM documents")}
@@ -1111,7 +1096,8 @@ def load_env(path: Path) -> list[str]:
     return loaded
 
 
-def call_model(system: str, user: str, *, model: str, api_key: str, url: str = XAI_URL, timeout: float = 900) -> ModelReply:
+def call_model(system: str, user: str, *, model: str, api_key: str, url: str = XAI_URL,
+               timeout: float = 900) -> ModelReply:
     """One stateless chat-completion request with the proposal schema enforced by the provider."""
     body = json.dumps({
         "model": model,
@@ -1142,9 +1128,8 @@ def call_model(system: str, user: str, *, model: str, api_key: str, url: str = X
 
 def user_message(transcripts: sqlite3.Connection, contexts: list[CompanyContext], batch: Batch, rendered: str, *,
                  expected_fingerprints: dict[str, str]) -> tuple[str, list[str]]:
-    """The complete model input for one batch: each company context with the passages that identify it, the most
-    recent explicit company reference before the section with the exchange just before it, then the rendered batch.
-    Returns the message and the passage IDs it adds beyond the batch, which the model may cite under context."""
+    """The complete model input: companies with their identifying passages, the conversation anchor, and the
+    batch. Returns the message and the extra passage IDs it makes citable."""
     own = [c for c in contexts if c.document_id == batch.document_id and c.review_state != "rejected"]
     shown = set(batch.passage_ids) | set(batch.context_ids)
     order = [row["id"] for row in read_rows(transcripts, "SELECT id FROM passages WHERE document_id = ? AND kind = "
@@ -1220,7 +1205,7 @@ def realize(transcripts: sqlite3.Connection, store: sqlite3.Connection, batch: B
             or passage[passage_id]["text"]
 
     def scale_question(passage_id: str) -> tuple[str, str] | None:
-        """The interviewer question that asked for a rating on a different scale than this answer used."""
+        """The interviewer question that asked for a different rating scale than this answer used."""
         answered = SCALE_ANSWERED.search(passage[passage_id]["text"]) if passage_id in passage else None
         if not answered:
             return None
@@ -1245,7 +1230,8 @@ def realize(transcripts: sqlite3.Connection, store: sqlite3.Connection, batch: B
             if proposed.key in keys:
                 raise ValueError(f"duplicate context key {proposed.key!r}")
             context = CompanyContext(
-                id=f"{document_id}:C{next_number('company_contexts', 'C') + len(contexts):02d}", document_id=document_id,
+                id=f"{document_id}:C{next_number('company_contexts', 'C') + len(contexts):02d}",
+                document_id=document_id,
                 company_name=proposed.company_name, aliases=proposed.aliases, employment=proposed.employment,
                 note=proposed.note, supporting=physical(proposed.supporting), origin="model", **version.model_dump())
             validate_record(transcripts, context, supplied, expected_fingerprints=expected_fingerprints)
@@ -1256,7 +1242,8 @@ def realize(transcripts: sqlite3.Connection, store: sqlite3.Connection, batch: B
         contexts.append(context)
     for proposed in proposal.findings:
         try:
-            context_id = keys.get(proposed.context_ref, proposed.context_ref if proposed.context_ref in stored else None)
+            known = proposed.context_ref if proposed.context_ref in stored else None
+            context_id = keys.get(proposed.context_ref, known)
             if context_id is None and proposed.context_ref is not None:
                 raise ValueError(f"refers to unknown or rejected context {proposed.context_ref!r}")
             supporting, qualifying = physical(proposed.supporting), physical(proposed.qualifying)
@@ -1297,7 +1284,8 @@ def realize(transcripts: sqlite3.Connection, store: sqlite3.Connection, batch: B
     aliases: list[ContextAlias] = []
     for proposed in proposal.aliases:
         try:
-            context_id = keys.get(proposed.context_ref, proposed.context_ref if proposed.context_ref in stored else None)
+            known = proposed.context_ref if proposed.context_ref in stored else None
+            context_id = keys.get(proposed.context_ref, known)
             if context_id is None:
                 raise ValueError(f"refers to unknown or rejected context {proposed.context_ref!r}")
             name = proposed.alias.strip()
@@ -1337,8 +1325,7 @@ def extract_batches(transcripts: sqlite3.Connection, store: sqlite3.Connection, 
     results: dict[str, BatchOutcome] = {}
 
     def prepare(batch: Batch) -> tuple[BatchOutcome | None, str, str, list[str]]:
-        # A batch sees contexts from other runs and from earlier batches of this run, never its own or later ones,
-        # so rerunning an unchanged schedule reproduces the same input and is reused instead of asked again.
+        # Hide this and later batches' own contexts and aliases so an unchanged rerun reproduces its input.
         created = {c: o.batch_id for o in outcomes.values() for c in o.context_ids}
         late = {a for o in outcomes.values() for a in o.alias_ids
                 if o.batch_id.split(":")[0] == batch.document_id and o.batch_id >= batch.id}
@@ -1444,12 +1431,14 @@ def main() -> int:
     command.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
     command.add_argument("--database", type=Path, default=DEFAULT_DATABASE)
     command.add_argument("--findings", type=Path, default=DEFAULT_FINDINGS)
-    command.add_argument("--env", type=Path, default=DEFAULT_ENV, help="Local env file with XAI_API_KEY; never committed")
+    command.add_argument("--env", type=Path, default=DEFAULT_ENV,
+                         help="Local env file with XAI_API_KEY; never committed")
     command.add_argument("--model", default=DEFAULT_MODEL)
     command.add_argument("--workers", type=int, default=1,
                          help="Interviews extracted concurrently; an interview's batches always stay sequential")
     action = command.add_mutually_exclusive_group(required=True)
-    action.add_argument("--batches", action="store_true", help="Print the extraction schedule after the integrity check")
+    action.add_argument("--batches", action="store_true",
+                        help="Print the extraction schedule after the integrity check")
     action.add_argument("--render", metavar="BATCH_ID", help="Print one batch's model input from canonical passages")
     action.add_argument("--check", action="store_true", help="Verify stored findings against the transcripts database")
     action.add_argument("--extract", metavar="BATCH_ID", nargs="+", help="Propose findings for these batches (or "

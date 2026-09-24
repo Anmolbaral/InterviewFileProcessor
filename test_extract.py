@@ -616,8 +616,10 @@ class AttributionTests(unittest.TestCase):
         self.expected = {"E1": self.document.extraction_sha256}
         self.connection = open_database(self.directory / "transcripts.sqlite", readonly=True)
         self.addCleanup(self.connection.close)
-        self.ids = {row[1]: row[0] for row in self.connection.execute("SELECT id, text FROM passages WHERE kind = 'text'")}
-        self.version = dict(source_sha256=self.document.source_sha256, extraction_sha256=self.document.extraction_sha256)
+        rows = self.connection.execute("SELECT id, text FROM passages WHERE kind = 'text'")
+        self.ids = {text: passage_id for passage_id, text in rows}
+        self.version = dict(source_sha256=self.document.source_sha256,
+                            extraction_sha256=self.document.extraction_sha256)
         both = self.ids["I lead IT at Acme, previously at Globex."]
         self.contexts = [
             CompanyContext(id="E1:C01", document_id="E1", company_name="Acme", employment="current",
@@ -635,7 +637,8 @@ class AttributionTests(unittest.TestCase):
         store = open_findings(self.directory / "findings.sqlite")
         self.addCleanup(store.close)
         save_run(store, ExtractionRun(id="seed", model="none", prompt_version="analyst-seed",
-                                      source_versions={"E1": SourceVersion(**self.version)}), self.contexts, list(findings))
+                                      source_versions={"E1": SourceVersion(**self.version)}),
+                 self.contexts, list(findings))
         return store
 
     def test_anchor_follows_the_latest_passage_naming_exactly_one_company(self):
@@ -683,7 +686,8 @@ class AttributionTests(unittest.TestCase):
             save_run(store, ExtractionRun(id="seed", model="none", prompt_version="analyst-seed",
                                           source_versions={"E1": SourceVersion(**self.version)}),
                      [self.contexts[0], self.contexts[1].model_copy(update={"note": note})], [])
-            outcome, = extract_batches(self.connection, store, [cost], call=FakeModel(['{"contexts": [], "findings": []}']),
+            empty = FakeModel(['{"contexts": [], "findings": []}'])
+            outcome, = extract_batches(self.connection, store, [cost], call=empty,
                                        model="fake-model", expected_fingerprints=self.expected)
             prints.append(outcome.input_fingerprint)
         self.assertNotEqual(*prints)
@@ -775,7 +779,8 @@ class QuantityNormalizationTests(unittest.TestCase):
                                      kind="pricing")
         self.assertEqual((blended.unit, blended.period), ("per user", "month"))
         mixed = normalize_quantity(Quantity(raw="around seventy", value=70.0),
-                                   "Sixty dollars per user per month, forty dollars per agent per month; around seventy.",
+                                   "Sixty dollars per user per month, forty dollars per agent per month; "
+                                   "around seventy.",
                                    kind="pricing")
         self.assertEqual((mixed.currency, mixed.unit, mixed.carried), ("dollars", None, ["currency"]))  # units differ
         ratio = Quantity(raw="almost double")  # a comparison, not a price: nothing to borrow
@@ -1019,7 +1024,7 @@ class ProvidedTranscriptExtractionTests(unittest.TestCase):
         names = {c.id: c.company_name for c in load_records(store, CompanyContext)}
         flags = attribution_flags(store, self.connection)
         in_scope = [f for f in load_records(store, Finding) if f.document_id == "E1" and f.review_state != "rejected"
-                    and any(195 <= int(citation[i].rsplit("P", 1)[1]) <= 249 or 284 <= int(citation[i].rsplit("P", 1)[1])
+                    and any(195 <= (n := int(citation[i].rsplit("P", 1)[1])) <= 249 or 284 <= n
                             <= 311 for i in f.supporting)]
         self.assertTrue(in_scope)
         unflagged_elsewhere = [f.id for f in in_scope if "Thermo" not in names.get(f.context_id or "", "")

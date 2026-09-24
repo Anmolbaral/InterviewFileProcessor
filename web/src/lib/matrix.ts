@@ -8,7 +8,7 @@ export const STATUS_WORD: Record<ReviewState, string> = { proposed: "Unreviewed"
 
 export interface Dimension { kind: Kind; title: string; hint: string }
 
-/** The rows of the matrix. Footprint replaces "market share": it counts company contexts, which is all three interviews can support. */
+/** Matrix rows. "Footprint" counts company contexts, never market share. */
 export const DIMENSIONS: Dimension[] = [
   { kind: "vendor_relationship", title: "Footprint in these interviews", hint: "Who deployed, previously used, evaluated, or only considered it. Company contexts, not market share." },
   { kind: "selection_criteria", title: "Why chosen or rejected", hint: "Stated criteria and the decisive reason, as the expert gave them." },
@@ -16,16 +16,13 @@ export const DIMENSIONS: Dimension[] = [
   { kind: "implementation", title: "Implementation reality", hint: "Durations, effort, and surprises as reported." },
 ];
 
-/** Column key: the vendor family, so "BMC", "BMC Helix", and "BMC Helix ITSM" share a column while each bullet
- * keeps the exact product name. The family is the first word, which holds for every vendor these experts named.
- * A vendor relationship with no vendor is an in-house system and gets its own column. */
+/** Column key: the vendor family (first word), so "BMC" and "BMC Helix" share a column; no vendor means in-house. */
 export function vendorOf(finding: Finding): string {
   if (!finding.vendor) return INHOUSE;
   return finding.vendor.trim().split(/\s+/)[0];
 }
 
-/** Findings that belong in the vendor matrix. Company-level statements with no vendor (criteria, scale) are read
- * per case instead of being forced into a vendor column. */
+/** Findings with a vendor, or vendor relationships; company-level statements are read per case instead. */
 export function matrixFindings(findings: Finding[]): Finding[] {
   return findings.filter((f) => f.vendor !== null || f.kind === "vendor_relationship");
 }
@@ -47,8 +44,7 @@ export function vendorColumns(findings: Finding[]): string[] {
     (deployed.get(b)?.size ?? 0) - (deployed.get(a)?.size ?? 0) || (total.get(b) ?? 0) - (total.get(a) ?? 0) || a.localeCompare(b));
 }
 
-/** Main columns are vendors some company deployed or that two or more company contexts discuss; the rest sit behind
- * a toggle. Decide this on the unfiltered set so a filter never makes a vendor disappear from the table. */
+/** Main columns: vendors deployed somewhere or discussed by two contexts, decided on the unfiltered set. */
 export function splitColumns(all: Finding[], vendors: string[]): { main: string[]; minor: string[] } {
   const contexts = new Map<string, Set<string>>();
   const deployed = new Set<string>();
@@ -64,8 +60,7 @@ export function splitColumns(all: Finding[], vendors: string[]): { main: string[
 
 export type EmptyReason = "No finding in this view" | "Not yet processed" | "No extracted observation";
 
-/** Why a cell is empty, said truthfully: filters removed findings, the transcript sections are not all processed,
- * or nothing was extracted. None of these is a reviewed conclusion that no evidence exists. */
+/** Why a cell is empty: filtered out, sections unprocessed, or nothing extracted. Never "no evidence exists". */
 export function emptyReason(unfilteredCell: Finding[], unprocessed: boolean): EmptyReason {
   if (unfilteredCell.length) return "No finding in this view";
   return unprocessed ? "Not yet processed" : "No extracted observation";
@@ -93,8 +88,7 @@ function truncate(text: string, max: number): string {
 
 export interface Summary { text: string; total: number; reviewed: number }
 
-/** Footprint cells list relationships with the companies that hold them. Other cells lead with a reviewed statement
- * when one exists, otherwise the first proposal, and always say how many are reviewed. */
+/** Footprint cells list companies per relationship; other cells lead with a reviewed statement when one exists. */
 export function cellSummary(cell: Finding[], kind: Kind, index: Index): Summary {
   const reviewed = cell.filter((f) => f.review_state === "reviewed" || f.review_state === "edited");
   const base = { total: cell.length, reviewed: reviewed.length };
@@ -126,7 +120,7 @@ export function roleLine(bundle: Bundle, index: Index, documentId: string): stri
   return lines.join(" · ");
 }
 
-/** The header's company name with the name the expert used, when a reviewer recorded it as an alias. */
+/** Company name with its first alias, the name the expert used. */
 export function companyName(context: Context): string {
   return context.aliases.length ? `${context.company_name} (${context.aliases[0]})` : context.company_name;
 }
@@ -151,8 +145,7 @@ export function citationsOf(finding: Finding, index: Index): string[] {
   return [...finding.supporting, ...finding.qualifying].map((id) => index.passages.get(id)?.citation_id ?? id);
 }
 
-/** What "Copy bullet" puts on the clipboard: the statement with its company, source, citations, qualifications,
- * and its actual review status, never bare. */
+/** Clipboard bullet: statement plus company, source, citations, qualifications, and review status. */
 export function bulletText(finding: Finding, bundle: Bundle, index: Index): string {
   const quantity = finding.quantity ? ` [${formatQuantity(finding.quantity, finding.kind)}]` : "";
   const qualifications = finding.qualifications.length ? ` Qualified: ${finding.qualifications.join(" ")}` : "";
@@ -160,14 +153,12 @@ export function bulletText(finding: Finding, bundle: Bundle, index: Index): stri
   return `• ${finding.statement}${quantity}${qualifications} (${companyLine(contextOf(finding, index), finding.context_id ?? NOT_ESTABLISHED)}; ${bundle.documents[finding.document_id]?.label ?? finding.document_id}; ${citationsOf(finding, index).join(", ")}; ${evidenceLabel(finding.evidence_type).toLowerCase()}; ${STATUS_WORD[finding.review_state].toLowerCase()}${attribution})`;
 }
 
-/** Who is speaking and about which company: a passage from Expert 1 about Thermo Fisher describes a former
- * employer, whatever the expert's current title says. */
+/** Which company a passage describes, so a former employer is never read as the current one. */
 export function speakingAbout(contexts: (Context | undefined)[]): string {
   const named = [...new Map(contexts.filter((c): c is Context => Boolean(c)).map((c) => [c.id, c])).values()];
   return named.map((c) => `${companyName(c)} (${EMPLOYMENT_LABELS[c.employment]})`).join("; ");
 }
 
-/** What "Copy quote" puts on the clipboard. */
 export function quoteText(passage: Passage, bundle: Bundle, index: Index, contexts: (Context | undefined)[] = []): string {
   const who = passage.speaker_label ?? "unattributed";
   const about = speakingAbout(contexts);
@@ -175,7 +166,6 @@ export function quoteText(passage: Passage, bundle: Bundle, index: Index, contex
   return `"${passage.text}" — ${who}${about ? `, speaking about ${about}` : ""}${role ? `; current role: ${role}` : ""} (${passage.citation_id ?? passage.id}${passage.timestamp_raw ? `, ${passage.timestamp_raw}` : ""})`;
 }
 
-/** Company-scale statements for a context, for the sidebar. */
 export function scaleLines(findings: Finding[], contextId: string): string[] {
   return findings.filter((f) => f.kind === "company_scale" && f.context_id === contextId).map((f) => f.statement);
 }
