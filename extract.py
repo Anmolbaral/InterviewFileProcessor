@@ -116,6 +116,14 @@ quantities of the linked findings. Never reconcile accounts by arithmetic or cho
 claim no listed finding makes, and propose no company contexts or aliases.
 
 If nothing needs linking, return empty lists."""
+SKILLS = BASE / ".claude/skills"
+SKILL_FRAME_VERSION = "1.0.0"  # SKILL_FRAME; bump on any wording change
+SKILL_FRAME = """Analyst guidance. The skills below describe how analysts will later compare these interviews across \
+companies. Use them only to notice what is worth extracting from this section: alternatives considered and why they \
+lost, what nearly changed a decision, conditions for switching, workarounds, observed behavior versus stated \
+preference, and statements that conflict. They never override the rules above or the schema. Ignore their workflow \
+steps, questions to the user, output formats, frequency counts, confidence levels, and any instruction to search or \
+ask; each finding still needs its own supporting passages."""
 PASSAGE_ID = re.compile(r"^(E[1-9]\d*):B\d{4}$")
 LINK_ID = re.compile(r"^E[1-9]\d*:L01$")  # one link batch per interview, after its sections
 FINDINGS_SCHEMA = """
@@ -408,6 +416,72 @@ def run_identity(transcripts: sqlite3.Connection, model: str, prompt_version: st
                 for row in read_rows(transcripts, "SELECT id, source_sha256, extraction_sha256 FROM documents")}
     return fingerprint(dict(model=model, prompt_version=prompt_version, contract_version=CONTRACT_VERSION,
                             source_versions=versions))
+
+
+def skill_guidance(names: list[str], *, root: Path = SKILLS) -> tuple[str, str]:
+    """The text appended to both system prompts for these skills, and the tag that versions it: each skill file's
+    hash, so an edited skill is a new run. A missing skill fails rather than silently running without it."""
+    blocks, tags = [], []
+    for name in names:
+        path = root / name / "SKILL.md"
+        if not path.is_file():
+            raise ValueError(f"skill {name!r} has no {path}; .claude/skills lists the available skills")
+        text = path.read_text(encoding="utf-8")
+        blocks.append(f'<skill name="{name}">\n{text.strip()}\n</skill>')
+        tags.append(f"{name}@{fingerprint(text)[:8]}")
+    return "\n\n" + "\n\n".join([SKILL_FRAME, *blocks]), f"skills-{SKILL_FRAME_VERSION}:{','.join(tags)}"
+
+
+def profile(store: sqlite3.Connection) -> dict:
+    """What a store's live findings contain, for comparing runs; counts describe the extraction, not the market."""
+    findings = [f for f in load_records(store, Finding) if f.review_state != "rejected"]
+    runs = load_runs(store)
+    section = {finding_id: o.batch_id for r in runs for o in r.batches for finding_id in o.finding_ids}
+    words = [len(f.statement.split()) for f in findings]
+
+    def tally(values) -> dict[str, int]:
+        counts: dict[str, int] = {}
+        for value in values:
+            counts[value] = counts.get(value, 0) + 1
+        return dict(sorted(counts.items()))
+
+    return dict(prompt_versions=sorted({r.prompt_version for r in runs if r.model != "none"}),
+                findings=len(findings), kinds=tally(f.kind for f in findings),
+                evidence_types=tally(f.evidence_type for f in findings),
+                sections=tally(section.get(f.id, "analyst") for f in findings),
+                words_per_statement=round(sum(words) / len(words), 1) if words else 0.0,
+                with_qualifications=sum(bool(f.qualifications) for f in findings),
+                with_qualifying_passages=sum(bool(f.qualifying) for f in findings),
+                with_quantity=sum(f.quantity is not None for f in findings))
+
+
+def compare(transcripts: sqlite3.Connection, base: Path, other: Path) -> None:
+    """Print two stores side by side: gold on unedited model output, then `profile`, with the change from BASE."""
+    with closing(open_findings(base, readonly=True)) as first, closing(open_findings(other, readonly=True)) as second:
+        stores = (first, second)
+        print(f"BASE  {base}\nOTHER {other}")
+        gold = [{case: status for case, status, _ in evaluate(store, transcripts, raw=True)} for store in stores]
+        print(f"{'gold on raw output':<60}{'BASE':>9}{'OTHER':>9}")
+        for case in {**gold[0], **gold[1]}:  # a case either store lacks still shows, as "-"
+            left, right = gold[0].get(case, "-"), gold[1].get(case, "-")
+            print(f"{case[:59]:<60}{left:>9}{right:>9}{'' if left == right else '  changed'}")
+        passed = [sum(status == "pass" for status in g.values()) for g in gold]
+        print(f"{'passing':<60}{passed[0]:>9}{passed[1]:>9}")
+        profiles = [profile(store) for store in stores]
+        for number, summary in enumerate(profiles):
+            print(f"{('BASE', 'OTHER')[number]} prompt versions: {', '.join(summary['prompt_versions']) or 'none'}")
+        for metric in profiles[0]:
+            if metric == "prompt_versions":
+                continue
+            values = [summary[metric] for summary in profiles]
+            rows = ([(key, *(v.get(key, 0) for v in values)) for key in sorted({*values[0], *values[1]})]
+                    if isinstance(values[0], dict) else [(metric, *values)])
+            if isinstance(values[0], dict):
+                print(metric)
+            for label, left, right in rows:
+                change = right - left
+                delta = f"{change:+.1f}" if isinstance(change, float) else f"{change:+d}"
+                print(f"{('  ' if isinstance(values[0], dict) else '') + label:<60}{left:>9}{right:>9}  {delta}")
 
 
 def section_findings(store: sqlite3.Connection, run_id: str, document_id: str) -> list[Finding]:
@@ -1746,12 +1820,13 @@ def realize(transcripts: sqlite3.Connection, store: sqlite3.Connection, batch: B
 
 def extract_batches(transcripts: sqlite3.Connection, store: sqlite3.Connection, batches: list[Batch], *, call,
                     model: str, prompt_version: str = PROMPT_VERSION, expected_fingerprints: dict[str, str],
-                    workers: int = 1) -> list[BatchOutcome]:
+                    workers: int = 1, guidance: str = "") -> list[BatchOutcome]:
     """Propose findings for each batch with one model call, validate, and store. A batch whose input, model, prompt,
     and contract are unchanged since a completed outcome is reused without a call; failed batches are retried. Any
     failure marks the batch failed with its reason and stores nothing from it. `call(system, user) -> ModelReply`.
     `workers` above one runs one lane per interview: an interview's batches stay sequential so each sees the contexts
-    stored before it, interviews run concurrently, and only the provider call leaves the main thread."""
+    stored before it, interviews run concurrently, and only the provider call leaves the main thread. `guidance`
+    (from `skill_guidance`) is appended to both system prompts and is part of every batch's input fingerprint."""
     if not batches:
         return []
     versions = {row["id"]: SourceVersion(source_sha256=row["source_sha256"], extraction_sha256=row["extraction_sha256"])
@@ -1774,12 +1849,16 @@ def extract_batches(transcripts: sqlite3.Connection, store: sqlite3.Connection, 
         else:
             rendered = render_batch(transcripts, batch, expected_fingerprints=expected_fingerprints)
         user, extra = user_message(transcripts, visible, batch, rendered, expected_fingerprints=expected_fingerprints)
-        input_fingerprint = fingerprint([user, model, prompt_version, CONTRACT_VERSION])  # the complete model input
+        input_fingerprint = fingerprint([user, model, prompt_version, CONTRACT_VERSION]  # the complete model input
+                                        + ([guidance] if guidance else []))
         supplied = batch.passage_ids + batch.context_ids + extra
         done = outcomes.get(batch.id)
         if done and done.status != "failed" and done.input_fingerprint == input_fingerprint:
             return done, input_fingerprint, "", supplied
         return None, input_fingerprint, user, supplied
+
+    def system(batch: Batch) -> str:
+        return (LINK_PROMPT if is_link(batch.id) else PROMPT) + guidance
 
     def complete(batch: Batch, input_fingerprint: str, supplied: list[str], reply: ModelReply | None,
                  failure: Exception | None) -> BatchOutcome:
@@ -1818,7 +1897,7 @@ def extract_batches(transcripts: sqlite3.Connection, store: sqlite3.Connection, 
                 results[batch.id] = done
                 continue
             try:
-                reply, failure = call(LINK_PROMPT if is_link(batch.id) else PROMPT, user), None
+                reply, failure = call(system(batch), user), None
             except Exception as problem:
                 reply, failure = None, problem
             results[batch.id] = complete(batch, input_fingerprint, supplied, reply, failure)
@@ -1836,7 +1915,7 @@ def extract_batches(transcripts: sqlite3.Connection, store: sqlite3.Connection, 
                 if done:
                     results[batch.id] = done
                     continue
-                pending[pool.submit(call, LINK_PROMPT if is_link(batch.id) else PROMPT, user)] = (
+                pending[pool.submit(call, system(batch), user)] = (
                     lane, batch, input_fingerprint, supplied)
                 return
 
@@ -1893,6 +1972,8 @@ def main() -> int:
                         "'all', which then links each interview's findings across sections) with one model call "
                         "each, validate, and store them as proposed")
     action.add_argument("--evaluate", action="store_true", help="Check stored findings against the audit's hard cases")
+    action.add_argument("--compare", nargs=2, type=Path, metavar=("BASE", "OTHER"),
+                        help="Set two findings stores side by side: gold on raw output, then what each extracted")
     action.add_argument("--calibrate", metavar="LABELS", type=Path,
                         help="Score the model judge against human labels (needs ANTHROPIC_API_KEY)")
     action.add_argument("--list", action="store_true", help="Print stored findings with their citations")
@@ -1900,6 +1981,8 @@ def main() -> int:
                         help="Record a reviewer's decision: reviewed or rejected (with --note)")
     action.add_argument("--edit", metavar="RECORD_ID", help="Apply --changes JSON to a record; it becomes 'edited'")
     command.add_argument("--changes", help="JSON object of fields to change with --edit")
+    command.add_argument("--skills", nargs="+", metavar="NAME", default=[],
+                         help="With --extract or --render, add these .claude/skills as guidance; a new run version")
     command.add_argument("--note", help="Reviewer's note for --review or --edit")
     command.add_argument("--judge", action="store_true", help="With --evaluate, also show the model judge's verdict "
                          "per rubric case (calibrating; not part of the gate)")
@@ -1907,6 +1990,8 @@ def main() -> int:
     command.add_argument("--judgments", type=Path, default=DEFAULT_JUDGMENTS, help="Cache of judge replies")
     args = command.parse_args()
     try:
+        guidance, tag = skill_guidance(args.skills) if args.skills else ("", "")
+        prompt_version = f"{PROMPT_VERSION}+{tag}" if tag else PROMPT_VERSION
         if args.findings.resolve() == args.database.resolve():
             raise ValueError("the findings database must be a separate file from the transcripts database")
         corpus, _ = run(args.manifest, args.database, check=True)  # original files, stored rows, chunks, index
@@ -1924,7 +2009,7 @@ def main() -> int:
                     raise ValueError(f"{args.render} links stored findings; {args.findings} does not exist")
                 with closing(open_findings(args.findings, readonly=True) if args.findings.is_file()
                              else sqlite3.connect(":memory:")) as store:
-                    run_id = run_identity(transcripts, args.model)
+                    run_id = run_identity(transcripts, args.model, prompt_version)
                     known = link_batches(transcripts, store, run_id) if is_link(args.render) else batches
                     batch = next((b for b in known if b.id == args.render), None)
                     if batch is None:
@@ -1953,13 +2038,16 @@ def main() -> int:
 
                 with closing(open_findings(args.findings)) as store:
                     outcomes = extract_batches(transcripts, store, chosen, call=call, model=args.model,
+                                               prompt_version=prompt_version, guidance=guidance,
                                                expected_fingerprints=expected, workers=args.workers)
                     # Links run after the sections so they see every finding the sections stored.
-                    linking = [b for b in link_batches(transcripts, store, run_identity(transcripts, args.model))
+                    run_id = run_identity(transcripts, args.model, prompt_version)
+                    linking = [b for b in link_batches(transcripts, store, run_id)
                                if every or b.id in links]
                     if missing := set(links) - {b.id for b in linking}:
                         raise ValueError(f"no stored findings to link for {', '.join(sorted(missing))}")
                     outcomes += extract_batches(transcripts, store, linking, call=call, model=args.model,
+                                                prompt_version=prompt_version, guidance=guidance,
                                                 expected_fingerprints=expected, workers=args.workers)
                     for outcome in outcomes:
                         print(f"{outcome.batch_id}: {outcome.status}" + (f" ({outcome.error})" if outcome.error else ""))
@@ -1968,6 +2056,8 @@ def main() -> int:
                         for finding in load_records(store, Finding):
                             if finding.id in outcome.finding_ids:
                                 print(describe(transcripts, finding))
+            elif args.compare:
+                compare(transcripts, *args.compare)
             elif args.evaluate or args.calibrate:
                 judge = None
                 if args.judge or args.calibrate:

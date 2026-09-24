@@ -26,6 +26,9 @@ python extract.py --render E1:S06                     # the exact model input fo
 python extract.py --extract all --workers 3           # propose findings (needs XAI_API_KEY)
 python extract.py --check                             # verify stored findings; list attribution flags
 python extract.py --evaluate                          # the gold regression gate
+python extract.py --extract all --workers 3 --findings data/parsed/run-skills.sqlite \
+  --skills synthesize-research competitive-brief      # the same extraction with skill guidance
+python extract.py --compare data/parsed/run-1.6.0.sqlite data/parsed/run-skills.sqlite   # two runs side by side
 python dashboard.py --build && python dashboard.py --check
 python -m unittest -v test_parser.py test_extract.py test_dashboard.py
 cd web && npm install && npm test && npm run build && npm run dev   # http://localhost:5173/
@@ -99,6 +102,13 @@ five cases outright, including a whole cost section. The dashboard still shows t
 reviewed and swapped in. `grok-4.6`, now the default, sits between the two on reasoning effort; its gold result is not
 recorded yet.
 
+`--skills` appends `.claude/skills/<name>/SKILL.md` to both extraction prompts under a fixed frame: the skills say
+what is worth noticing (alternatives and why they lost, switching conditions, conflicting accounts) and never override
+the extraction rules. Each skill file's hash joins the prompt version, so an edited skill is a new run and a skill run
+never reuses a plain run's batches. `--compare BASE OTHER` prints both stores' raw gold results case by case, then
+finding counts by kind, evidence type, and section, statement length, and how many findings carry qualifications or
+quantities; the counts describe the extraction, not the market.
+
 ## Dashboard
 
 `dashboard.py --build` writes `web/src/data/bundle.json` (git-ignored; it contains transcript text) after the parser
@@ -110,7 +120,7 @@ carries citations, units, status, and caveats.
 
 ## Verification
 
-65 Python tests (parser, extraction, dashboard) and 15 Vitest tests, including a rendered smoke test over the real
+83 Python tests (parser, extraction, dashboard) and 15 Vitest tests, including a rendered smoke test over the real
 bundle; `npm run build` type-checks and bundles. The definition of done is in [AGENTS.md](AGENTS.md).
 
 ## Limits

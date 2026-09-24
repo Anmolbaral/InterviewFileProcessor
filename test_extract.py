@@ -10,6 +10,7 @@ import tempfile
 import threading
 import typing
 import unittest
+from contextlib import closing
 from pathlib import Path
 from unittest import mock
 
@@ -330,6 +331,39 @@ class ExtractTests(unittest.TestCase):
                          [("E1:F001", "E1:C01"), ("E1:F002", "E1:C01")])
         self.assertEqual(len(load_runs(store)), 2)
 
+    def test_skill_guidance_is_versioned_bounded_and_never_reuses_a_plain_run(self):
+        root = self.directory / "skills"
+        (root / "alpha").mkdir(parents=True)
+        (root / "alpha" / "SKILL.md").write_text("---\nname: alpha\n---\nNote what nearly changed the decision.\n")
+        guidance, version = extract.skill_guidance(["alpha"], root=root)
+        self.assertIn("Note what nearly changed the decision.", guidance)
+        self.assertIn("never override", guidance)
+        self.assertRegex(version, r"^skills-\d+\.\d+\.\d+:alpha@[0-9a-f]{8}$")
+        (root / "alpha" / "SKILL.md").write_text("---\nname: alpha\n---\nSomething else.\n")
+        self.assertNotEqual(extract.skill_guidance(["alpha"], root=root)[1], version)  # an edit is a new version
+        with self.assertRaisesRegex(ValueError, "missing"):
+            extract.skill_guidance(["missing"], root=root)
+        store = open_findings(self.directory / "findings.sqlite")
+        self.addCleanup(store.close)
+        cost = build_batches(self.connection)[2]
+        fake = FakeModel([self.proposal(), self.proposal()])
+        self.extract(store, cost, fake)
+        # Same prompt version, added guidance: a different model input, so asked again rather than reused.
+        self.extract(store, cost, fake, guidance=guidance)
+        self.assertEqual(len(fake.calls), 2)
+        self.assertNotIn("nearly changed", fake.calls[0][0])
+        self.assertTrue(fake.calls[1][0].startswith(extract.PROMPT) and fake.calls[1][0].endswith(guidance))
+
+    def test_profile_measures_what_a_run_extracted(self):
+        store = open_findings(self.directory / "findings.sqlite")
+        self.addCleanup(store.close)
+        self.extract(store, build_batches(self.connection)[2], FakeModel([self.proposal()]))
+        summary = extract.profile(store)
+        self.assertEqual((summary["findings"], summary["kinds"], summary["evidence_types"]),
+                         (1, {"pricing": 1}, {"expert_estimate": 1}))
+        self.assertEqual((summary["words_per_statement"], summary["with_qualifying_passages"]), (10.0, 1))
+        self.assertEqual(summary["prompt_versions"], [PROMPT_VERSION])
+
     def test_prompt_names_every_finding_kind_the_contract_accepts(self):
         kinds = extract.PROMPT.split("Kinds:", 1)[1].split("Keep historical", 1)[0]
         for kind in typing.get_args(extract.FindingKind):
@@ -602,6 +636,29 @@ class ExtractTests(unittest.TestCase):
         self.assertEqual(result.returncode, 1, result.stdout)
         self.assertIn("XAI_API_KEY", result.stderr)
         self.assertFalse(findings.exists())
+
+    def test_cli_skills_fail_before_any_call_and_compare_sets_runs_side_by_side(self):
+        script = [sys.executable, str(Path(__file__).with_name("extract.py")), "--manifest", str(self.manifest),
+                  "--database", str(self.database)]
+        environment = {**os.environ, "XAI_API_KEY": "unused"}
+        findings = self.directory / "findings.sqlite"
+        result = subprocess.run([*script, "--findings", str(findings), "--extract", "E1:S02", "--skills", "no-such"],
+                                capture_output=True, text=True, check=False, env=environment)
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("no-such", result.stderr)
+        self.assertFalse(findings.exists())
+        base, other = self.directory / "base.sqlite", self.directory / "other.sqlite"
+        cost = build_batches(self.connection)[2]
+        for path, versions in ((base, [PROMPT_VERSION]), (other, [PROMPT_VERSION, "2.0.0"])):
+            with closing(open_findings(path)) as store:
+                for version in versions:
+                    self.extract(store, cost, FakeModel([self.proposal()]), prompt_version=version)
+        result = subprocess.run([*script, "--compare", str(base), str(other)], capture_output=True, text=True,
+                                check=False)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertRegex(result.stdout, r"findings\s+1\s+2\s+\+1")
+        self.assertRegex(result.stdout, r"E1:S02\s+1\s+2\s+\+1")
+        self.assertRegex(result.stdout, r"gold source versions\s+fail\s+fail")  # synthetic, not the reviewed files
 
     def test_cli_preflights_then_reports_batches_and_stale_findings(self):
         findings = self.directory / "findings.sqlite"
