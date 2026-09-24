@@ -1,173 +1,132 @@
 # Analytics Dashboard: evidence workspace for three ITSM interviews
 
-A client-facing dashboard over three expert-interview transcripts, built in three layers. `parser.py` preserves every passage with its source location and fingerprints in SQLite. `extract.py` proposes source-bound findings with one model call per transcript section, validates every citation, and stores the proposals for review. `dashboard.py` turns the verified passages and stored findings into one JSON bundle that the React app in `web/` renders: a comparison of company cases by finding kind, prepared questions, honest counts, an evidence drawer down to the exact passage, selection, an editable conclusion, and a Markdown export. No server; nothing calls a model at view time.
+A client-facing workspace over three expert-interview transcripts about IT service management vendors. It compares
+company cases, shows the exact transcript passage behind every claim, lets an analyst select findings and edit a
+conclusion, and exports a Markdown brief with citations and caveats. The interviews explain specific buying decisions;
+they cannot establish vendor market share, and the product says so wherever that question comes up.
+
+Three layers, each checkable on its own:
+
+1. `parser.py` preserves every transcript paragraph with its source location and fingerprints in SQLite.
+2. `extract.py` has a model propose source-bound findings section by section, then validates every citation and
+   applies deterministic rules before storing them as unreviewed proposals.
+3. `dashboard.py` builds one JSON bundle from the verified passages and findings; the React app in `web/` renders it.
+   No server, and no model call at view time.
 
 ## Run
 
-From the project root. Requires Python 3.10 or newer; verified on 3.11 and 3.13. Dependencies are pinned in `requirements.txt`; SQLite ships with Python.
+Python 3.10 or newer (verified on 3.11 and 3.13), dependencies pinned in `requirements.txt`. Node 20+ for `web/` only.
 
 ```sh
-python3 -m venv .venv
-source .venv/bin/activate
+python3 -m venv .venv && source .venv/bin/activate
 python -m pip install -r requirements.txt
-python parser.py
-python parser.py --check
-python parser.py --search '"forty dollars per agent"'
-python extract.py --batches
-python extract.py --render E3:S06
-python extract.py --extract all --workers 3
-python extract.py --list
-python extract.py --check
-python extract.py --evaluate
-python dashboard.py --build
-python dashboard.py --check
+python parser.py && python parser.py --check          # parse and verify the transcripts
+python extract.py --batches                           # the extraction schedule
+python extract.py --render E1:S06                     # the exact model input for one section
+python extract.py --extract all --workers 3           # propose findings (needs XAI_API_KEY)
+python extract.py --check                             # verify stored findings; list attribution flags
+python extract.py --evaluate                          # the gold regression gate
+python dashboard.py --build && python dashboard.py --check
 python -m unittest -v test_parser.py test_extract.py test_dashboard.py
-cd web && npm install && npm test && npm run build && npm run dev
+cd web && npm install && npm test && npm run build && npm run dev   # http://localhost:5173/
 ```
 
-The dashboard runs at http://localhost:5173/ under `npm run dev`; `npm run build` writes a static `web/dist/` you can serve with `npx vite preview`. Node 20 or newer is needed for the web app only.
+Inputs are private and git-ignored: `analysis/transcripts/manifest.json` lists each DOCX with `expert`, `source`, and
+`sha256`. For a fresh clone, copy `manifest.example.json` there and fill in the path and hash. Outputs go to
+`data/parsed/transcripts.sqlite` and a separate `data/parsed/findings.sqlite` (`--manifest`, `--database`,
+`--findings` override). `--extract` reads `XAI_API_KEY` from the environment or a git-ignored `.env`; everything else
+runs without a key. Synthetic tests run without private files; real-file tests fail rather than skip when the
+manifest's files are missing or changed.
 
-Input: `analysis/transcripts/manifest.json`, a JSON array of entries with `expert` (positive integer), `source` (DOCX path, absolute or relative to the manifest), `sha256` (the file's lowercase SHA-256), and optionally `paragraphs` (expected nonempty paragraph count). Output: `data/parsed/transcripts.sqlite`; findings go to the separate `data/parsed/findings.sqlite`. Override with `--manifest`, `--database`, and `--findings`. `--extract` needs `XAI_API_KEY`, read from the environment or from a local `.env` that git ignores; on a macOS python.org build without a certificate bundle, `.env` also needs `SSL_CERT_FILE=/etc/ssl/cert.pem`. Everything else runs without a key.
+## Evidence contract
 
-A run hashes each file. A document whose content hash, parser version, and python-docx version match its stored rows is validated and reused without parsing. Changed or new documents are parsed and validated, then written in one transaction, so a failed input leaves the previous contents intact. Stored rows that fail validation stop the run. `--check` reparses every source, opens the database read-only, and fails on changed inputs, stale or tampered rows, or broken references without writing anything. It also recomputes the derived chunks from the stored passages and fails if the chunk rows, memberships, or keyword-index rows differ. The database path cannot be a source, the manifest, an exploratory extract, or anything under `sources/`.
+- **Canonical text is never normalized.** Each paragraph is a passage (`E1:B0030`) with a citation ID for nonempty
+  ones (`E1:P021`), its speaker and timestamp, section, and original XML. Every document records its source SHA-256
+  and an extraction fingerprint over all stored content and parser versions.
+- **Fail closed.** `parser.py --check` reparses the originals read-only and fails on changed inputs, tampered rows, or
+  stale derived data. `render_passages` quotes only at an expected fingerprint for every document requested.
+- **Findings are proposals bound to evidence.** Each finding names its company context, kind (`company_scale`,
+  `vendor_relationship`, `selection_criteria`, `pricing`, `implementation`, `rating`), statement, vendor and
+  relationship, evidence type, optional quantity, qualifications, and supporting, qualifying, and context passages,
+  each passage in one role. Records carry the source fingerprints they were checked against; a changed transcript
+  makes them stale, never silently relabeled.
+- **Review never inherits trust.** `extract.py --review ID reviewed|rejected` and `--edit ID --changes '{...}'` log
+  every decision; any edit leaves the record `edited` until reviewed again.
+- **Companies keep their names from evidence.** A company record stays as first proposed; a later name (the spoken
+  name of an employer the header anonymizes, a spelling variant) is an alias record accepted only when a cited passage
+  contains it.
 
-```sh
-sqlite3 -header -column data/parsed/transcripts.sqlite "SELECT id, speaker_label, timestamp_raw, substr(text, 1, 60) AS text FROM passages WHERE citation_id = 'E1:P021'"
-```
+## Extraction
 
-## Private inputs and Git
+Each transcript section is one model call (`grok-4.6` by default; `--model` to change). The header before the first
+heading gets no call of its own because every section already carries it. Each call sees the section, the interview's
+introduction, every known company with the passages that identify it, and the most recent passage naming exactly one
+company, so a section that continues a former employer's account without naming it can still be filed correctly.
+Sections of one interview run in order, interviews in parallel, and an unchanged input is reused without a call.
 
-`.gitignore` excludes the original DOCX files, `analysis/` (manifest, exploratory extracts, evidence audit, Ponytail reference), `data/` (the databases), credentials, environments, and caches. Code, tests, pins, this README, and the plans are eligible for version control. Inspect `git status --short` before committing.
+Deterministic rules then apply before anything is stored:
 
-For a fresh clone, copy `manifest.example.json` to `analysis/transcripts/manifest.json`, replace the path and the all-zero hash (`shasum -a 256 file.docx`), and run the parser. Synthetic tests run without private files. The real-file tests skip when the manifest is absent, and fail rather than skip when its files are missing or changed.
+- every cited passage must have been shown to the model, be body text, and match the expected fingerprint;
+- interviewer text is never supporting evidence; it moves to context, and a finding left with no expert passage is
+  rejected;
+- quantities keep the source wording; currency is labeled `dollars`; a figure's own words set a missing unit ("seven
+  months"); only a price borrows a unit or period from the rest of its answer, and only when that answer names one
+  unit, marked as `carried`;
+- an answer on a different rating scale than its question ("1 to 7" asked, "9 out of 10" given) is labeled, never
+  rescaled.
 
-## Database contract
+`extract.py --check` also flags findings whose company disagrees with the conversation's company anchor. Flags ask
+for review; they do not fail the check.
 
-Two canonical tables, two derived tables, and one FTS5 index; `PRAGMA user_version` holds the schema version (1). Foreign keys are enforced on every connection the parser opens.
+## Quality gate
 
-`documents`: one row per interview with `id`, `source_filename`, `source_sha256`, `parser_version`, `python_docx_version`, `extraction_sha256`, `coverage`, plus `warnings` and `ancillary_parts` as JSON text. Ancillary parts are headers, footers, footnotes, endnotes, and comments by XML part name; they never become interview turns.
+`python extract.py --evaluate` checks 18 gold cases (G01–G18) drawn from an evidence audit: current versus former
+employer, module status, interviewer premises, corrections, quantities and units, rating scales, and the market-share
+limit. The cases are the spec: a failure means the system needs fixing. Each case is scored after review and on raw
+model output alone; an interview missing from the store reports `not_run`, never a pass. The gate exits 1 until every
+case passes and refuses to run on transcripts other than the reviewed versions.
 
-`passages`: one row per top-level body paragraph, referencing its document.
+Measured runs (one run each; the model is non-deterministic, so these are single samples):
 
-- `id`: physical paragraph reference such as `E1:B0030`. Primary key.
-- `paragraph_index`: one-based position, blank paragraphs included.
-- `citation_id`: existing nonempty-paragraph reference such as `E1:P021`; null for blanks, unique otherwise. Not the physical position.
-- `text`: exact paragraph text with its whitespace, tabs, line breaks, and `[AUDIO ...]` markers. Never normalized.
-- `kind` (`blank`, `heading`, `turn_marker`, `text`), `style_name`, and `heading_basis` (`style` or `bold_underline`).
-- `section_id`: the passage holding the current literal heading. Headings are navigation hints, not facts.
-- `turn_id`, `speaker_label`, `timestamp_raw`: taken verbatim from an explicit `Expert N HH:MM:SS` or `AI Interviewer HH:MM:SS` paragraph and carried to the following text paragraphs until the next marker or heading. Preamble text keeps nulls.
-- `anomaly_markers`: the `[AUDIO ...]` markers as JSON text.
-- `raw_xml`: the paragraph's original XML element, namespace-trimmed, so formatting the columns do not model stays recoverable.
+| Run | Model | Findings | Gold, raw output |
+| --- | --- | --- | --- |
+| Prompt 1.2.0 (current `findings.sqlite`, shown in the dashboard) | grok-4.7 | 304 | 6 of 18 (11 after review) |
+| Prompt 1.4.0 | grok-4.7 | 301 | 9 of 18 |
+| Prompt 1.5.0 | grok-4.20-0309-non-reasoning | 168 | 6 of 18 |
 
-Canonical `text` is the run content found anywhere inside the paragraph, cross-checked against python-docx's own reading. A difference keeps the complete text, adds a warning naming the passage, and marks the document `partial`. Tables, text boxes, tracked changes, drawings, and equations also warn and mark `partial`. A document with no recognizable turn markers gets a warning. The extraction fingerprint covers all stored content plus parser and library versions; downstream records should keep both `source_sha256` and `extraction_sha256` and reject a mismatch until reviewed.
+The reasoning model took about 45 minutes a run and the non-reasoning model about 45 seconds; the fast model missed
+five cases outright, including a whole cost section. The dashboard still shows the 1.2.0 store until a new run is
+reviewed and swapped in. `grok-4.6`, now the default, sits between the two on reasoning effort; its gold result is not
+recorded yet.
 
-### Derived: exchange chunks and keyword search
+## Dashboard
 
-`chunks` groups text passages into exchanges: one interviewer turn plus the replies that follow it until the next interviewer turn or heading. The opening greeting and an unanswered final question are one-turn exchanges; text outside any turn, the preamble in these files, is an `unattributed` chunk. `chunk_passages` holds each chunk's ordered passage IDs, and the database enforces that a text passage belongs to at most one chunk. Chunk `text` is the member texts joined with newlines. `header` is the interview profile and section, for example `E3 | Expert 3 Head of IT Operations at Solara Renewables (2020 - present) | Cost & Total Cost of Ownership`, with `header_passage_ids` naming the passages it came from. Both exist for keyword search only. The header describes the interview, not the company a given exchange discusses, and is never evidence for attribution. Every derived row is rebuilt on every run.
-
-`chunks_fts` indexes text and header with the `porter unicode61` tokenizer, so `agent` matches `Agents` and `$40` is indexed as `40`. `search(connection, query, document_id=None, limit=10)` returns BM25-ranked hits, header words at half weight, with `passage_ids` as evidence and `header` plus `header_passage_ids` as search context; a query FTS5 cannot parse is retried as its bare words, all required.
-
-`render_passages(connection, passage_ids, expected_fingerprints=...)` returns each passage with its own speaker, timestamp, citation, text, and its document's source and extraction fingerprints, ordered by document position and original paragraph position across sections. Every nonempty request requires a `{document_id: extraction_sha256}` map covering **every requested document**. Omitted, empty, incomplete, or mismatched expectations raise `ValueError`, as do unknown or duplicate passage IDs. An empty ID list returns `[]`. Render exchanges and model inputs through these canonical passages. All requested IDs resolving establishes mechanical completeness; selecting all relevant qualifications is a separate responsibility.
-
-Before an extraction or display batch, call `run(manifest, database, check=True)` to validate original files, stored content, derived chunks, and the index without writing. The renderer compares stored version metadata; it does not rehash the text or original DOCX on each call. CLI `--search` now runs this full preflight before any output, even when the query would have no hits, then passes the verified corpus's extraction fingerprints to the renderer. This requires the original files and manifest to remain available. Future extraction batches must use the same preflight. For existing reviewed findings, retain their saved source and extraction fingerprints: do not replace old expectations with freshly read values to clear a mismatch.
-
-`neighbors(connection, chunk_id, before=1, after=1)` returns surrounding chunks within the same section only. A whole section or transcript is `passages WHERE section_id = ?` or `WHERE document_id = ? ORDER BY paragraph_index`; selected passage IDs from multiple sections can go directly to `render_passages` with the complete expected-fingerprint map.
-
-## Extraction layer: schedule, contract, and findings store
-
-`extract.py` reads the verified transcripts database, prepares model input, and with `--extract` proposes findings through one model call per batch. Every command runs the parser's read-only integrity check first, so changed originals, tampered rows, or a stale index stop it before any evidence is printed or sent.
-
-**Schedule.** `build_batches` makes one batch per literal section plus one for the text before the first heading, per interview in source order: `E1:S00` (preamble) through `E1:S09`. A batch lists its text passages as primary evidence, the same interview's introductory passages (everything before the second heading) as repeated context, and the chunks it contains. It fails if any chunk is missing, duplicated, or straddles two batches. `model_batches` leaves out the text before the first heading when `--extract all` runs. That text is the interview's header, an anonymized employer label and a role line; every later batch already carries it as introductory context, and a company proposed from it alone is named only by the anonymized label. On the supplied files that is 30 batches covering 315 text passages and 160 chunks, 27 of them sent to the model; the largest is Expert 1's "Vendor Selection & Decision Criteria" with 38 passages.
-
-**Rendering.** `render_batch` quotes through `render_passages` at the expected fingerprints. Each line is `[citation] speaker timestamp: text`; the heading is labeled navigation only, and context is separated from the section's evidence. Expert 1's "Current ServiceNow Environment" heading travels as a label, the opening current-employer passage (E1:P016) as context, and the Thermo Fisher account (E1:P021) as that section's evidence.
-
-**Contract.** Strict pydantic records that reject unknown fields:
-
-- `Quantity`: the source's wording plus optional value, open or closed bounds, approximate flag, unit, period, currency, price basis, and `carried`. Bounds must be ordered and contain the value; nothing is converted or averaged. Currency is normalized to `dollars` for $, dollar, or USD, with `raw` keeping the wording. `carried` lists any currency, unit, or period taken from the same answer rather than the figure's own words.
-- `CompanyContext`: company name as stated, aliases, employment (`current`, `historical`, `unclear`), a note for unresolved naming, and supporting passages. A company record stays as first proposed.
-- `ContextAlias`: another name for a stored company, with the passage that uses it. A later batch proposes one when the transcript names a company differently, such as the spoken name of an employer the header anonymizes or a spelling variant. It is accepted only if a cited passage contains the name and the name is new for that company. Loading a company appends its live alias names, and reviewers decide on aliases like any other record.
-- `Finding`: company context ID, or null when the supplied passages do not establish the company (such a finding cannot be marked reviewed until a person sets one); kind (`company_scale`, `vendor_relationship`, `selection_criteria`, `pricing`, `implementation`, `rating` for scores and likelihoods); statement; vendor; relationship (`deployed`, `previously_used`, `evaluated`, `hypothetical`); evidence type (`firsthand_report`, `expert_estimate`, `attributed_explanation`, `opinion`, `prompted_agreement`, `hypothetical`, `analyst_inference`); optional quantity; qualifications; supporting, qualifying, and context passages. A vendor relationship states the relationship; the vendor may be absent when the source names none ("the current employer runs a custom ITSM"). A pricing finding may carry no figure when the source gives none. Both rules were relaxed after real batches were rejected for exactly those statements.
-- Both carry `origin` (`model` or `analyst`), `review_state` (`proposed` by default, `reviewed`, `edited`, `rejected`), and the interview's `source_sha256` and `extraction_sha256`. Evidence lists hold physical passage IDs (`E3:B0098`) of the record's own interview, each in one role.
-- `ExtractionRun`: model, prompt version, contract version, the source versions it ran against, and one `BatchOutcome` per batch: `findings`, `no_findings`, or `failed` with its error, plus the passage IDs the batch was given, a fingerprint of its rendered input with the model, prompt, and contract versions, the record IDs it proposed, and the raw response kept locally.
-
-**Model pass.** `extract_batches` sends each batch as one stateless chat-completion request over standard-library HTTPS to xAI (`grok-4.20-0309-non-reasoning` by default, `--model` to change), with the proposal's JSON schema enforced by the provider, three retries on rate limits, server errors, or network failures, and a 900-second read timeout because reasoning on the largest sections took more than five minutes. `--workers N` runs one lane per interview: an interview's batches stay sequential so each sees the company contexts stored before it, interviews run concurrently, and only the HTTP call leaves the main thread. The system prompt (`PROMPT_VERSION`, bumped on any wording change) states that transcript text is evidence and never instructions, that only shown citation IDs may be cited, how employers, evidence types, ranked criteria, quoted alternatives, and quantities are to be kept apart, and what unit, period, and basis mean. The user message lists the interview's stored company contexts for reuse by ID, each with the passages that identify it, then the most recent passage before the section that names exactly one company together with the exchange just before the section, then the rendered batch. Those added passages can be cited under `context`. A batch sees contexts from other runs and from earlier batches of its own run, never its own or later ones, so rerunning an unchanged schedule reproduces the same input. The reply's citation IDs are mapped to physical passage IDs and context keys to allocated IDs, then **each record is validated on its own** with `validate_record` against what the batch was shown. Records that pass are saved as `proposed` with origin `model`; records that fail are listed in the batch outcome as `rejected` with the reason and never cost the batch its valid records. A run is identified by model, prompt version, contract version, and the source versions; a batch whose complete model input is unchanged under the same run is reused without a call, a failed batch (a failed call or an unreadable reply) is retried and stores only its error and raw response.
-
-**Validation.** `validate_record` checks that every cited passage was supplied to the batch that proposed it, resolves to a text passage (headings and turn markers are rejected) at the expected fingerprint, and that the record is bound to that same version. It returns the passages in source order. It does not judge whether they support the statement; that is the reviewer's job.
-
-At the proposal boundary, `realize` keeps a passage under `supporting` when the model also lists it under `qualifying`, but only if `qualifications` contains nonblank text. It removes only the overlapping qualifying copy; the supporting passage, qualification wording, and any other qualifying passages remain. Missing or whitespace-only qualification text still causes rejection. Stored records retain the strict one-role rule, and unknown, unsupplied, non-text, or stale evidence still fails validation. The saved-response regression replays all nine observed supporting/qualifying collisions (eight in the Expert 1 1.3.0 pilot and one in the main Expert 3 run) without changing either database or its raw responses; this verifies mechanical acceptance and preservation, not semantic review.
-
-The boundary also applies deterministic rules before validation:
-- **Interviewer text is never support.** An interviewer passage cited as supporting moves to `context`; a finding with no expert passage left is rejected.
-- **Context copies are dropped.** A context copy of a supporting or qualifying passage is removed.
-- **Quantities are normalized by what the figure is.** Every quantity passes through `normalize_quantity`. A figure's own words set a missing unit: "about seven months" is months and "30-40%" is percent, while "tickets a year" is a period, not a unit. Currency is relabeled `dollars` wherever the figure says $, dollar, or USD. Only a price rate (a pricing finding with a number and no unit other than "per ...") borrows from the rest of its answer (all passages of the turn containing its first supporting passage): currency, plus unit and period when that answer names exactly one unit. Counts, durations, ratios, and percentages borrow nothing, and nothing is taken from beyond the answer. Re-applying these rules to the stored 1.4.0 quantities without a model call changes 14 of them: four non-price figures lose a wrongly carried currency, and durations such as E2:P089's seven months gain their unit.
-- **Rating scales are labeled.** An answer on a different rating scale than the interviewer's preceding question ("1 to 7" against "9 out of 10") gets the question under `context` and a qualification saying the scales differ. Nothing is rescaled.
-
-Prompt `1.5.0` asks for aliases instead of new company records when a listed company is named differently. Contract `1.3.0` adds alias records and the rating kind. Prompt `1.4.0` defines relationship as the company's status with the vendor at the time described. `previously_used` applies only when the source says the company stopped using or replaced it; a former employer's platform stays `deployed` unless the source says otherwise. Contract `1.2.0` adds `carried`. A full run under prompt 1.4.0 (30 batches into a separate store, before the alias records and the rating kind existed) stored 301 findings with no failed batches and no rejections, and one current-employer record per interview. Its raw gold score was 9 of 18, against 6 for the 1.2.0 run: G01, G03, G07 and G12 newly passed, and G15 newly failed on its own negation-blind text check. Most remaining failures traced to current-employer records named only by the anonymized header, which is what the alias records and the header-only skip address. Under prompt 1.5.0 the fast `grok-4.20-0309-non-reasoning` model, now the default, ran all 27 model batches in about 45 seconds against roughly 45 minutes for `grok-4.7`. It stored 168 findings (301 for the 1.4.0 reasoning run) and scored 6 of 18 raw. G04, G11 and G16 passed for the first time, showing the alias records and the rating kind at work. It produced no finding at all for five cases (G02, G03, G09, G14, G17), including an empty cost section, and it attached the header label "Pharma Company" to Thermo Fisher as an alias. The comparable 1.5.0 reasoning run was stopped after 17 of 27 batches, so the models are not compared on the same prompt.
-
-Prompt `1.3.1` instructs the model to reuse an existing current-employer context when the continuing account uses another name, unless the source establishes a second current job. Alternate names and unresolved naming ambiguity stay in the finding's qualifications; an ambiguous choice among existing current contexts stays unassigned. The prompt also requests one supporting citation plus qualification text for a caveat within that same passage. Contract `1.1.1` versions the new proposal normalization, so new extraction calls cannot reuse the old contract's cached outcomes. Neither version change repairs existing data: recovering rejected proposals requires an explicit replay or new run, and a new run in an existing store appends proposals. The prompt change has not yet been tested in a fresh live model run.
-
-**Review.** `python extract.py --review ID reviewed|rejected --note "..."` records a person's decision on a finding or company context; `--edit ID --changes '{...}' --note "..."` changes fields (aliases, a quantity, a qualification) and always leaves the record `edited`, so an edit never inherits reviewed status until a further `--review`. Identity and provenance fields cannot be edited; the changed record is re-validated against the transcripts before it is written; every decision is appended to a `reviews` log whose latest note per record ships in the bundle. In this session the two current employers gained the names their experts use as aliases (Xena and Abzena; Calloway Biosciences), and three findings were marked reviewed after their passages were read: Expert 1's custom ITSM at the current employer (E1:P016), ServiceNow at Thermo Fisher as a historical employer (E1:P021), and Solara's roughly forty dollars per agent per month (E3:P098), after correcting its currency from the model's `USD` to the expert's "dollars".
-
-**Store.** `data/parsed/findings.sqlite` is a separate file the parser never opens. It holds `extraction_runs`, `company_contexts`, `context_aliases`, and `findings` as validated JSON records with a few indexed columns and no foreign keys into the transcripts database; records bind to passage IDs plus fingerprints. `save_run` writes one run in one transaction, requires every record to match the run's source version and its context to belong to the same interview, and never overwrites an existing ID. `check_findings` (`python extract.py --check`) re-resolves every stored record against the transcripts database at the version it was bound to and reports all mismatches together; stale records keep their review state until a person revalidates them. The CLI refuses a findings path equal to the transcripts database and fails when no findings database exists yet.
-
-`--check` also lists findings whose company disagrees with the interview's company anchor (`attribution_flags`); these are review prompts that do not fail the check. The anchor comes from the transcript alone: the interview starts at the current employer, and the latest passage naming exactly one stored company or alias moves it, carrying across section headings. On the 1.2.0 store it flags 16 findings: Expert 1's cost and switching findings filed under the current employer, and two Expert 3 findings whose company is carried forward. The CLI's read-only `--check` also warns when an interview has more than one non-rejected current-employer context, listing the IDs and company names. This is an advisory review warning, including for potentially legitimate concurrent jobs; it neither fails the integrity check nor merges, edits, or reassigns records. On the 1.3.0 pilot it identifies `E1:C01` (Xena) and `E1:C03` (Abzena). A person resolving an existing split must handle both the context's aliases/naming note and the findings' context assignments; adding an alias alone does not consolidate two IDs.
-
-**Critical regression gate.** `python extract.py --evaluate` checks 18 curated cases from the evidence audit (G01–G18): company and time attribution, vendor/module states, interviewer premises, qualifiers and corrections, quantities and units, rating scale, and market-share limits. It runs no model and never edits findings. It exits 1 when a case fails, required evidence is absent, an interview the case reads was never extracted into the store (`not_run`, never counted as a pass), stored records are stale, or any source/extraction fingerprint differs from the reviewed set. Each case is also scored on unedited model output alone (`raw`, rejected proposals included). The summary gives both pass counts and how many model findings and company contexts were edited, so prompt versions are compared on raw output. On the 1.2.0 store 11 of 18 cases pass after review and 6 on raw output; the difference comes from the two edited company contexts. The Expert 1 pilot under prompt 1.3.0 (five batches in a separate store) passes 6, with G03 (Thermo cost) and G12 (rollout durations) passing where 1.2.0 fails, and 5 cases not run. The reviewed fingerprints are pinned in `extract.py`; a source change requires checking the affected passages and intentionally updating the gate. The checks target known high-risk distinctions with explicit record fields and narrow text rules. They are regression alarms, not proof that every extracted statement is semantically supported; passing the gate still requires human review. The current private store has failing and absent cases, so a nonzero result is expected until the affected findings are corrected and reviewed.
-
-Not built yet: review inside the dashboard (decisions go through the command line) and generated prose answers (topics are filters). Vendor relationships the model classified generously (for example Workday as a deployed platform at Thermo Fisher, where the passage describes an HR integration) stay visible as unreviewed proposals until a person rejects or edits them.
-
-## Dashboard: bundle, questions, and the web app
-
-`dashboard.py --build` runs the parser's read-only check and `check_findings`, then writes `web/src/data/bundle.json` (ignored by git; it contains transcript text). The bundle ships every text and heading passage rendered at the verified fingerprints, so the evidence drawer and its "nearby in this section" view need no server; every stored context and finding with its run and batch of origin; the comparison matrix and counts over live (non-rejected) findings, where counts count distinct company contexts and never findings; each run's batch outcomes without raw responses; the framing text (the client's question, why market share is unestimable, the caveats); and eight prepared questions. `check_bundle` (`dashboard.py --check`) re-renders every shipped passage at the recorded fingerprints and fails on any text, speaker, timestamp, or citation difference, on any record citing a passage the bundle does not ship, and on any answer citation outside the bundle. A stale bundle fails at the earliest layer: changed originals fail the parser check, a rebuilt transcripts database fails `check_findings`, an old bundle against a new database fails the fingerprint comparison. The bundle records a fingerprint of the stored contexts, findings, and latest review notes, and `--check` fails with "bundle is behind the findings store" after any extraction or review until `--build` runs again. Each finding ships its attribution flag. The web app shows a disputed or unestablished company as a red label on the finding card, carries that label into copied bullets and the Markdown export, and never uses such a finding as a cell's lead statement. Findings with no established company stay out of the per-company matrix and counts.
-
-**Questions.** `QUESTIONS` holds the brief's starter questions and its grounded set (Expert 1's current platform, Calloway's choice of BMC, Freshservice's cost at Solara, whether anyone is moving to ServiceNow, market share, BMC's implementation timing). `select_evidence` filters live findings by kind, interview, vendor, and relationship and lists them per company context in scope, so a gap shows as an empty case. Today every answer is the deterministic `fallback_answer`: the matching findings per case with gaps stated, no prose, no model. `validate_answer` exists for generated answers: any citation or finding outside the supplied evidence, or a citation that no longer resolves, withholds the prose and ships the listing. No generated answer has been produced yet.
-
-**Web app** (`web/`, React 19, TypeScript, Vite 7, Tailwind 4, native elements, no component library). It imports the bundle statically and shows one screen with two views. A collapsible sidebar (a toggle on narrow screens) holds two filters (review status, evidence type), the sources included with each expert's role line, and the company contexts collapsed. The header holds a topic selector ("Explore evidence by topic": the eight prepared questions used as filters, with the note that this is a filter, not an answer, and the gaps stated), Methods, the brief (labeled analyst draft), and Export, under one scope sentence: these interviews explain specific buying decisions and do not measure market share, with the count of reviewed versus unreviewed findings. **Cases** is the default view: one card per company whose deployment an expert describes (four), with platform used and prior system from vendor-relationship findings, scale statements, the reported reasons for the choice with reviewed statements first and a status word on each, the review count, and View evidence; contexts mentioned only in passing sit under Background contexts. **Compare vendors** is the matrix: vendor chips to choose columns (vendors some company deployed or that two or more contexts discuss are on by default), vendor families as columns with the exact product names under the header, an in-house column for custom systems, four dimensions as rows (footprint in these interviews, why chosen or rejected, pricing and TCO, implementation reality), a lead statement per cell that prefers a reviewed finding, a status line, and an honest empty state (no finding in this view, not yet processed, or no extracted observation); on phones the table becomes stacked vendor cards. Every panel is a non-modal right pane above the header: a cell or a case lists its findings, each with a status word (Unreviewed, Reviewed, Analyst-edited), company and current or former employer, evidence type, quantity in the source's wording, qualifications, reviewer note, and directly beneath it the passages it cites with speaker, who they are speaking about, timestamp, citation ID, and the expert's current role; Copy as bullet carries company, source, citations, qualifications, and the real status; Copy quote carries attribution. Methods holds the scope and caveats, how findings were produced, unprocessed sections, per-run batch outcomes with rejected reasons, reviewer decisions on company names, and source versions. The brief panel lists chosen findings with their status, holds the conclusion textarea, and copies or downloads the Markdown export; selection and conclusion persist in `localStorage` per bundle fingerprint, disclosed on the panel.
-
-## Scope
-
-A small parser for this paragraph-based interview layout. Heading detection from bold+underline and the two speaker labels are conventions verified for these files, not a general classifier. Original DOCX files stay unchanged and authoritative. The findings contract records company and time attribution; proposing and reviewing claims belongs to the next milestones.
+`dashboard.py --build` writes `web/src/data/bundle.json` (git-ignored; it contains transcript text) after the parser
+and findings checks pass. `--check` re-renders every shipped passage and fails when the bundle no longer matches the
+transcripts or lags the findings store. The web app opens on company cases, with a vendor comparison view, an
+evidence panel showing each finding above its cited passages, status words on every finding, a red label on disputed
+or unestablished companies, a brief with an editable conclusion kept in `localStorage`, and a Markdown export that
+carries citations, units, status, and caveats.
 
 ## Verification
 
-Tests cover text fidelity, ID mapping, strict records, deterministic output, database round trip and reuse, changed or corrupt sources, partial coverage, nested runs, tampered rows, protected paths, preservation of the previous database after a failed run, exchange grouping, keyword search, and derived-row integrity. They also require complete expected fingerprints, preserve source order across sections and documents, and verify that CLI search rejects changed sources, altered text, and stale indexes before emitting evidence. The real-file tests compare every stored paragraph with a separate XML read and verify the original hashes.
+65 Python tests (parser, extraction, dashboard) and 15 Vitest tests, including a rendered smoke test over the real
+bundle; `npm run build` type-checks and bundles. The definition of done is in [AGENTS.md](AGENTS.md).
 
-| Interview | Body paragraphs | Citation IDs | Turn labels | Headings | Exchanges |
-| --- | --- | --- | --- | --- | --- |
-| Expert 1 | 494 | 326 | 158 | 9 | 80 |
-| Expert 2 | 169 | 169 | 79 | 9 | 40 |
-| Expert 3 | 157 | 157 | 73 | 9 | 37 |
+## Limits
 
-All 820 paragraphs are retained and both readers agreed on every one. Interviewer-led exchanges number 79, 39, and 36; the extra one per interview is the opening greeting, and each interview also has one unattributed preamble chunk. Expert 1's two text line breaks are preserved; its 167 formatting tab stops are not text.
+- Citation checks prove a passage exists and matches its version, not that it supports the statement; that is review.
+- Three findings are reviewed; everything else is a labeled model proposal.
+- Findings are extracted per section, so two accounts of one event in different sections are not linked
+  automatically (gold case G13).
+- The parser's heading and speaker rules are verified for these three files, not a general transcript format.
 
-`test_extract.py` covers schedule coverage and context on a synthetic two-section interview; canonical, version-bound rendering; contract and evidence validation failures; the never-overwrite store with stale detection; CLI preflight, schedule, render, check, and failure paths; and the credential-less `--extract` failure. With a stand-in for the provider call it verifies proposal citation mapping, cached batch reuse, context reuse, and failed batches for bad citations or responses. The supplied-transcript checks cover schedule completeness, an analyst-authored Solara pricing finding, fail-closed evaluation when critical cases are missing or source versions differ, interviewer prompts used only as context, both companies' conditional ServiceNow scenarios, the testing-environment clarification, the Ivanti product/experience distinction, and Thermo cost and implementation claims. The 18-case gate is exercised against both missing and intentionally incorrect findings.
+## Next
 
-`test_dashboard.py` (7 tests) covers attribution flags, null companies, and the store-freshness failure, plus the bundle over a two-interview fixture: the whole text corpus shipped once with sections and batch IDs, the matrix excluding rejected findings, counts that count contexts rather than findings, the integrity check rejecting tampered text, a stale fingerprint, and a citation the bundle does not ship, evidence selection by kind, interview, and vendor with per-case gaps, and a generated answer being withheld when it cites outside its evidence. The manifest-gated test builds the bundle from the real stores and checks it. In `web/`, Vitest runs 15 tests: quantity formatting (open bounds never become midpoints, carried fields labeled), attribution labels in lead statements, bullets, and export, citation parsing with unresolved IDs, neighbours confined to a section, the Markdown export carrying units, quotes, labels, caveats, and exclusions, vendor families and the in-house column, main columns decided on the unfiltered set, reviewed-first cell summaries, empty-cell reasons and unprocessed sections, copy text carrying status, qualifications, and who the speaker describes, quote order and roles, primary versus background cases, and case summaries; plus a rendered smoke test over the real bundle that shows the scope sentence and the Cases view, opens a case's evidence with status words, switches to Compare vendors, opens a cell to its findings and passages with citation IDs, adds a finding to the brief, and opens Methods. `npm run build` type-checks and bundles cleanly. Layout was checked in headless Chrome with device emulation at 1280 and 390 px: the header controls stay visible, the matrix scrolls inside its own region, the sidebar collapses behind a toggle on phones, and open panels sit above the header.
-
-One real run of `--extract E3:S06` with `grok-4.7` under prompt 1.2.0 stored one company context (Solara Renewables, current, alias Solara, from E3:P002 and E3:P017) and 15 proposed findings, all passing `--check`: Freshservice as deployed with two renewals; ServiceNow, Ivanti, and Zendesk for IT as evaluated alternatives; Solara's roughly forty dollars per agent per month with unit and period as stated (E3:P098, citing E3:P096 and E3:P017 as context); the three alternative figures as separate findings with "north of one-fifty" kept as an open lower bound; the budget overrun at maybe 5 percent; the Project-module add-on; the 6 to 8 percent renewal range; and two opinions. The call used about 3,600 prompt and 1,800 completion tokens plus roughly 18,000 reasoning tokens and took four and a half minutes.
-
-Three limits were observed in the same session. The model wrote the currency as `USD` where the source says "dollars"; contract 1.2.0 now normalizes currency at the boundary. A run under prompt 1.1.0 produced 11 findings from the same passages and linked the Project-module passage as a qualification of the budget-overrun finding, while the 1.2.0 run split them into separate findings with no qualification link, so granularity and linking vary between runs and nothing here counts as reviewed. The first run, under prompt 1.0.0, failed closed because one pricing finding without a figure violated a contract rule since removed; the whole batch was discarded and only its error and raw response were kept, which shows that one rejected record currently costs the batch's other proposals.
-
-## Files
-
-- `parser.py`: models, parser, validation, SQLite store, exchange chunks, keyword search, CLI.
-- `test_parser.py`: integrity and failure checks.
-- `extract.py`: findings contract, extraction schedule, batch rendering, model call with interview lanes, per-record validation, findings store, CLI.
-- `test_extract.py`: contract, schedule, validation, lanes, and store checks.
-- `dashboard.py`: bundle builder, prepared questions, answer validation, bundle integrity check, CLI.
-- `test_dashboard.py`: bundle, counts, integrity, question, and answer checks.
-- `web/`: the React dashboard (`src/App.tsx`, `src/components/`, `src/lib/` with Vitest tests, `src/types.ts` mirroring the Python records).
-- `requirements.txt`: two pinned dependencies.
-- `data/parsed/transcripts.sqlite`: generated, ignored by git.
-- `data/parsed/findings.sqlite`: created when a run is saved, ignored by git.
-- `web/src/data/bundle.json`: written by `dashboard.py --build`, ignored by git.
-
-## Near-term roadmap for the first design partner
-
-1. **Review inside the dashboard.** Three findings are reviewed; the rest are labeled model proposals. Add approve, edit, and reject on the finding card, writing to the existing `review_state` with a log, so one wrong attribution never reaches a client slide unnoticed. This is the trust step the whole product rests on.
-2. **Clear the gold gate.** Review the failed and absent cases from `python extract.py --evaluate`, correct source-linked findings only after checking their passages, and rerun the gate. Keep company contexts and conclusions explicitly reviewed; update prompts only for measured misses.
-3. **Generated answers for the prepared questions**, produced offline from the selected evidence with the withholding rule already in place, so a click gives a short cited paragraph instead of a listing; then bounded live questions once the prepared ones prove useful.
-4. **Faster, cheaper extraction** so a fourth interview lands in minutes: a lower reasoning setting or a faster model where the audit cases still pass, and per-batch fan-out inside an interview once contexts are seeded.
-5. **Exports fitted to the partner's report**, starting from how they actually paste the Markdown brief into slides, before building any slide generator.
-
-Next: use the gate output to prioritize source review and corrections in the private findings store, then rebuild and check the bundle. Working rules are in [AGENTS.md](AGENTS.md).
+1. **Company registry first.** Settle each interview's companies, former employers, and names once, with a check that
+   a name belongs to its company, before any findings are extracted.
+2. **Smaller, question-led model calls.** Use the existing exchange chunks and the prepared questions so each call does
+   one narrow task, plus a second pass for missed facts; measure against the gold on raw output.
+3. **Repeated runs.** Report per-case pass rates across runs with intervals before adopting a prompt or model.
+4. **Review inside the dashboard,** writing to the existing review log.
+5. **Cited answers to the prepared questions,** abstaining per company when evidence is incomplete or conflicting.
