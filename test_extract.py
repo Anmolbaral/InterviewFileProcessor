@@ -19,7 +19,7 @@ from pydantic import ValidationError
 import extract
 from extract import (PROMPT_VERSION, BatchOutcome, CompanyContext, ExtractionRun, Finding, ModelReply, Quantity,
                      SourceVersion, attribution_flags, build_batches, check_findings, company_anchors, extract_batches,
-                     link_batches, model_batches, run_identity,
+                     calibrate, judge_cases, link_batches, model_batches, run_identity,
                      load_env, load_records, load_runs, normalize_quantity, open_findings, realize, render_batch,
                      review, save_run, user_message, validate_record)
 from extract import DEFAULT_FINDINGS, Proposal, evaluate
@@ -1443,6 +1443,140 @@ class ProvidedTranscriptExtractionTests(unittest.TestCase):
                      "G02 compliance discussion returns to Thermo Fisher"):
             with self.subTest(case=case):
                 self.assertEqual(results[case][0], "fail", results[case][1])
+
+    def judge_fixture(self, findings, *, seed="judge", documents=("E1", "E2", "E3")):
+        """An analyst-seeded store holding `findings` plus the gold contexts of `documents`, for judge tests."""
+        contexts = [c for c in self.gold_records()[0] if c.document_id in documents]
+        versions = {d.id: SourceVersion(source_sha256=d.source_sha256, extraction_sha256=d.extraction_sha256)
+                    for d in self.corpus.documents}
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        store = open_findings(Path(directory.name) / f"{seed}.sqlite")
+        self.addCleanup(store.close)
+        save_run(store, ExtractionRun(id=seed, model="none", prompt_version="analyst-seed", source_versions=versions),
+                 contexts, findings)
+        return store, Path(directory.name) / "judgments.jsonl"
+
+    def testing_findings(self, finding=None):
+        finding = finding or self.gold_records()[1]
+        return [finding("E1:C02", ["E1:P241"], "Unexpected testing cost came from underestimating how many business "
+                        "users needed access to test workflows.", qualifying=["E1:P237", "E1:P245"],
+                        qualifications=["The initial yes was clarified: testing access, rather than purchasing "
+                                        "separate non-production environments."])]
+
+    def verdicts(self, **items):
+        return json.dumps({"verdicts": [dict(item=item, verdict=verdict, finding_ids=ids, reason="As stated.")
+                                        for item, (verdict, ids) in items.items()]})
+
+    def test_rubrics_read_only_their_case_passages_and_never_reach_the_extractor(self):
+        for case, items in extract.GOLD_RUBRICS.items():
+            self.assertIn(case, extract.CASE_PASSAGES)
+            self.assertEqual(len({item.id for item in items}), len(items))
+            for item in items:
+                with self.subTest(case=case, item=item.id):
+                    self.assertTrue(item.passages)
+                    self.assertLessEqual(set(item.passages), set(extract.CASE_PASSAGES[case]))
+                    for prompt in (extract.PROMPT, extract.LINK_PROMPT):
+                        self.assertNotIn(item.text, prompt)
+        self.assertNotIn("G04", extract.GOLD_RUBRICS)  # cases that stay fully deterministic
+        self.assertNotIn("G14", extract.GOLD_RUBRICS)
+
+    def test_judge_input_is_blind_canonical_and_limited_to_code_chosen_candidates(self):
+        _, finding = self.gold_records()
+        testing = self.testing_findings(finding)
+        unrelated = finding("E1:C02", ["E1:P171"], "About 3-5 employees maintained ServiceNow.")
+        store, cache = self.judge_fixture([*testing, unrelated])
+        fake = FakeModel([self.verdicts(M1=("met", ["E1:F001"]), M2=("met", ["E1:F001"]), N1=("clear", []))])
+        judge_cases(store, self.connection, call=fake, cache=cache, model="judge-model", cases=["G09"])
+        system, user = fake.calls[0]
+        self.assertEqual(system, extract.JUDGE_PROMPT)
+        self.assertIn("E1:F001", user)
+        self.assertNotIn("E1:F002", user)  # the staffing finding cites none of G09's passages
+        self.assertIn("[E1:P241] Expert 1", user)  # quoted from canonical passages
+        self.assertIn("we underestimated the number of business users", user)
+        for leak in (str(cache.parent), "judge.sqlite", "not_run", "absent", "deterministic", "gold", "run-1."):
+            self.assertNotIn(leak, user)
+
+    def test_judge_replies_are_rejected_unless_complete_and_grounded_in_the_items_passages(self):
+        store, cache = self.judge_fixture(self.testing_findings())
+        bad = {
+            "unknown finding": self.verdicts(M1=("met", ["E1:F999"]), M2=("met", ["E1:F001"]), N1=("clear", [])),
+            "missing item": self.verdicts(M1=("met", ["E1:F001"]), N1=("clear", [])),
+            "wrong verdict kind": self.verdicts(M1=("clear", []), M2=("met", ["E1:F001"]), N1=("clear", [])),
+            "met without evidence": self.verdicts(M1=("met", []), M2=("met", ["E1:F001"]), N1=("clear", [])),
+            "not json": "The findings look fine.",
+        }
+        for name, reply in bad.items():
+            with self.subTest(name):
+                result, = judge_cases(store, self.connection, call=FakeModel([reply]), cache=cache.with_name(
+                    f"{name}.jsonl"), model="judge-model", cases=["G09"])
+                self.assertEqual(result[1], "judge_unavailable", result[2])
+        # G13's link item needs a finding that cites both timing passages, not one of them.
+        _, finding = self.gold_records()
+        seven = finding("E2:C01", ["E2:P089"], "The rollout took about seven months, faster than expected.")
+        store, cache = self.judge_fixture([seven], seed="bmc")
+        reply = self.verdicts(M1=("met", ["E2:F001"]), M2=("met", ["E2:F001"]), N1=("clear", []))
+        result, = judge_cases(store, self.connection, call=FakeModel([reply]), cache=cache, model="judge-model",
+                              cases=["G13"])
+        self.assertEqual(result[1], "judge_unavailable")
+        self.assertIn("E2:F001", result[2])
+
+    def test_judge_verdicts_combine_so_a_violation_fails_even_when_every_must_is_met(self):
+        cases = {"pass": self.verdicts(M1=("met", ["E1:F001"]), M2=("met", ["E1:F001"]), N1=("clear", [])),
+                 "fail": self.verdicts(M1=("met", ["E1:F001"]), M2=("not_met", []), N1=("clear", [])),
+                 "violated": self.verdicts(M1=("met", ["E1:F001"]), M2=("met", ["E1:F001"]),
+                                           N1=("violated", ["E1:F001"]))}
+        for expected, reply in cases.items():
+            with self.subTest(expected):
+                store, cache = self.judge_fixture(self.testing_findings(), seed=expected)
+                result, = judge_cases(store, self.connection, call=FakeModel([reply]), cache=cache,
+                                      model="judge-model", cases=["G09"])
+                self.assertEqual(result[1], "pass" if expected == "pass" else "fail", result[2])
+
+    def test_judge_fails_closed_caches_and_calls_only_for_scoreable_cases(self):
+        store, cache = self.judge_fixture(self.testing_findings())
+        down, = judge_cases(store, self.connection, call=FakeModel([RuntimeError("HTTP 529 overloaded")]),
+                            cache=cache, model="judge-model", cases=["G09"])
+        self.assertEqual(down[1], "judge_unavailable")
+        reply = self.verdicts(M1=("met", ["E1:F001"]), M2=("met", ["E1:F001"]), N1=("clear", []))
+        fake = FakeModel([reply])
+        first, = judge_cases(store, self.connection, call=fake, cache=cache, model="judge-model", cases=["G09"])
+        again, = judge_cases(store, self.connection, call=fake, cache=cache, model="judge-model", cases=["G09"])
+        self.assertEqual((first[1], again[1], len(fake.calls)), ("pass", "pass", 1))  # the unchanged case is cached
+        none = FakeModel([])
+        (absent,) = judge_cases(store, self.connection, call=none, cache=cache, model="judge-model", cases=["G15"])
+        e1_only, _ = self.judge_fixture(self.testing_findings(), seed="e1", documents=("E1",))
+        (unrun,) = judge_cases(e1_only, self.connection, call=none, cache=cache, model="judge-model", cases=["G13"])
+        self.assertEqual((absent[1], unrun[1], len(none.calls)), ("absent", "not_run", 0))
+
+    def test_claude_replies_other_than_a_finished_answer_are_errors(self):
+        finished = {"content": [{"type": "thinking", "thinking": ""}, {"type": "text", "text": "{}"}],
+                    "stop_reason": "end_turn", "model": "claude-sonnet-5", "usage": {"output_tokens": 5}}
+        self.assertEqual(extract.claude_reply(finished).text, "{}")
+        for stop in ("refusal", "max_tokens"):
+            with self.subTest(stop), self.assertRaises(RuntimeError):
+                extract.claude_reply({**finished, "stop_reason": stop})
+
+    def test_calibration_scores_repeats_against_frozen_labels_and_applies_the_bar_to_held_out_only(self):
+        store, cache = self.judge_fixture(self.testing_findings())
+        path = Path(tempfile.mkdtemp()) / "labels.json"
+        self.addCleanup(lambda: path.unlink(missing_ok=True))
+        store_path = store.execute("PRAGMA database_list").fetchone()[2]
+        entry = dict(store=store_path, case="G09", raw=False, note="clarified correctly")
+        path.write_text(json.dumps({"rubric_version": extract.RUBRIC_VERSION, "labels": [
+            {**entry, "split": "dev", "expected": "pass"},
+            {**entry, "split": "holdout", "expected": "fail", "items": ["N1"], "seeded": True}]}))
+        ok = self.verdicts(M1=("met", ["E1:F001"]), M2=("met", ["E1:F001"]), N1=("clear", []))
+        fake = FakeModel([ok] * 3)  # identical input: every label reuses the three repeats
+        report = calibrate(path, self.connection, call=fake, cache=cache, model="judge-model", repeats=3)
+        self.assertEqual(len(fake.calls), 3)
+        self.assertEqual(report["dev"]["agreement"], 1.0)
+        self.assertEqual(report["holdout"]["false_pass"], 1)  # the seeded error passed: the bar fails
+        self.assertEqual(report["holdout"]["seeded_caught"], 0.0)
+        self.assertFalse(report["bar_met"])
+        path.write_text(json.dumps({"rubric_version": "0.9.0", "labels": []}))
+        with self.assertRaises(ValueError):  # labels written for another rubric are refused
+            calibrate(path, self.connection, call=fake, cache=cache, model="judge-model")
 
 if __name__ == "__main__":
     unittest.main()
