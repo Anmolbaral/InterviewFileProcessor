@@ -8,6 +8,7 @@ import subprocess
 import sys
 import tempfile
 import threading
+import typing
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -18,7 +19,7 @@ from pydantic import ValidationError
 import extract
 from extract import (PROMPT_VERSION, BatchOutcome, CompanyContext, ExtractionRun, Finding, ModelReply, Quantity,
                      SourceVersion, attribution_flags, build_batches, check_findings, company_anchors, extract_batches,
-                     model_batches,
+                     link_batches, model_batches, run_identity,
                      load_env, load_records, load_runs, normalize_quantity, open_findings, realize, render_batch,
                      review, save_run, user_message, validate_record)
 from extract import DEFAULT_FINDINGS, Proposal, evaluate
@@ -328,6 +329,70 @@ class ExtractTests(unittest.TestCase):
         self.assertEqual([(f.id, f.context_id) for f in load_records(store, Finding)],
                          [("E1:F001", "E1:C01"), ("E1:F002", "E1:C01")])
         self.assertEqual(len(load_runs(store)), 2)
+
+    def test_prompt_names_every_finding_kind_the_contract_accepts(self):
+        kinds = extract.PROMPT.split("Kinds:", 1)[1].split("Keep historical", 1)[0]
+        for kind in typing.get_args(extract.FindingKind):
+            self.assertIn(kind, kinds)
+
+    def test_links_read_the_interviews_stored_findings_and_cite_only_their_passages(self):
+        store = open_findings(self.directory / "findings.sqlite")
+        self.addCleanup(store.close)
+        self.extract(store, build_batches(self.connection)[2], FakeModel([self.proposal()]))
+        run_id = run_identity(self.connection, "fake-model")
+        link, = link_batches(self.connection, store, run_id)
+        self.assertEqual((link.id, link.passage_ids, link.context_ids), ("E1:L01", ["E1:B0009", "E1:B0011"],
+                                                                         ["E1:B0006"]))
+        linked = dict(context_ref="E1:C01", kind="pricing", evidence_type="firsthand_report",
+                      statement="The forty-dollar answer and the question it answers are one account.",
+                      supporting=["E1:P011"], qualifying=["E1:P009"], qualifications=["Nothing is reconciled."])
+        stray = {**linked, "supporting": ["E1:P015"], "qualifying": []}  # no stored finding cites P015
+        company = dict(key="globex", company_name="Globex", employment="historical", supporting=["E1:P006"])
+        fake = FakeModel([json.dumps(dict(contexts=[company], findings=[linked, stray]))])
+        outcome, = self.extract(store, link, fake)
+        system, user = fake.calls[0]
+        self.assertEqual(system, extract.LINK_PROMPT)
+        self.assertIn("E1:F001", user)
+        self.assertIn("[E1:P011] Expert 1 00:01:10: Roughly forty dollars per agent per month.", user)
+        self.assertEqual((outcome.status, outcome.finding_ids, outcome.context_ids), ("findings", ["E1:F002"], []))
+        self.assertEqual(len(outcome.rejected), 2)  # links propose no companies and cite only stored findings' passages
+        made = next(f for f in load_records(store, Finding) if f.id == "E1:F002")
+        self.assertEqual((made.supporting, made.qualifying), (["E1:B0011"], ["E1:B0009"]))
+        # The link's own finding stays out of the next link input, so an unchanged rerun is reused without a call.
+        again, = self.extract(store, link_batches(self.connection, store, run_id)[0], fake)
+        self.assertEqual((len(fake.calls), again.finding_ids), (1, ["E1:F002"]))
+
+    def test_a_rerun_link_never_reads_earlier_link_findings_or_other_runs(self):
+        store = open_findings(self.directory / "findings.sqlite")
+        self.addCleanup(store.close)
+        save_run(store, self.run_record(id="analyst"), [self.context()], [])  # another run's company
+        other = self.finding(id="E1:F001", statement="An analyst's finding from another run.")
+        save_run(store, self.run_record(id="analyst"), [], [other])
+        cost = build_batches(self.connection)[2]
+        section = dict(contexts=[], findings=[{**json.loads(self.proposal())["findings"][0], "context_ref": "E1:C01"}])
+        self.extract(store, cost, FakeModel([json.dumps(section)]))  # E1:F002
+        run_id = run_identity(self.connection, "fake-model")
+        linked = dict(context_ref="E1:C01", kind="pricing", evidence_type="firsthand_report",
+                      statement="A link.", supporting=["E1:P011"], qualifying=["E1:P009"],
+                      qualifications=["Nothing is reconciled."])
+        first = FakeModel([json.dumps(dict(contexts=[], findings=[linked]))])
+        self.extract(store, link_batches(self.connection, store, run_id)[0], first)  # E1:F003
+        self.assertNotIn("E1:F001", first.calls[0][1])  # another run's finding is not this run's to link
+        # Another section adds a finding, so the link reruns; it must not read its own earlier finding back.
+        role = dict(context_ref="E1:C01", kind="company_scale", evidence_type="firsthand_report",
+                    statement="The expert leads IT at Acme.", supporting=["E1:P006"])
+        self.extract(store, build_batches(self.connection)[1], FakeModel([json.dumps(dict(findings=[role]))]))
+        second = FakeModel([json.dumps(dict(contexts=[], findings=[]))])
+        self.extract(store, link_batches(self.connection, store, run_id)[0], second)
+        self.assertIn("E1:F004", second.calls[0][1])
+        self.assertIn("E1:F002", second.calls[0][1])
+        self.assertNotIn("E1:F003", second.calls[0][1])
+
+    def test_extraction_of_no_batches_makes_no_calls_at_any_worker_count(self):
+        store = open_findings(self.directory / "findings.sqlite")
+        self.addCleanup(store.close)
+        self.assertEqual(extract_batches(self.connection, store, [], call=FakeModel([]), model="fake-model",
+                                         expected_fingerprints=self.expected, workers=3), [])
 
     def test_extraction_fails_closed_and_records_why(self):
         store = open_findings(self.directory / "findings.sqlite")
@@ -1323,6 +1388,9 @@ class ProvidedTranscriptExtractionTests(unittest.TestCase):
                 list(self.batches.values()))})
         self.assertEqual(complete["G15 Thermo staffing is not full-time headcount"][0], "absent")
         self.assertEqual(complete["G07/G08 interviewer premises are not supporting evidence"][0], "pass")
+        bmc = complete["G13 BMC timing tension remains linked and unreconciled"]
+        self.assertEqual(bmc[0], "not_run")  # the two timing accounts sit in different sections; linking never ran
+        self.assertIn("E2:L01", bmc[1])
 
     def test_gold_accepts_correct_wording_it_used_to_flag(self):
         contexts, finding = self.gold_records()
