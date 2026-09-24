@@ -86,16 +86,16 @@ After each milestone: check it, correct the largest observed failure, then conti
 
 ### Code
 
-- Python 3.10 or newer, standard library first. The only dependencies are `python-docx` and `pydantic`, pinned; a new one needs a demonstrated need.
-- One module, `parser.py`, plain functions, no speculative abstractions. Strict pydantic records with invariants in validators; SHA-256 fingerprints over sorted JSON.
-- Canonical text is never normalized. Derived rows are rebuilt each run and verified by the read-only `--check`. Fail closed with an actionable `ValueError`.
-- IDs: documents `E<n>`, passages `E1:B0032`, citations `E1:P021`, chunks `E1:X0024`. Quote and attribute through `render_passages`, never from chunk text or headers.
+- Python 3.10 or newer, standard library first. The only dependencies are `python-docx` and `pydantic`, pinned; a new one needs a demonstrated need. Model calls go over standard-library HTTPS to the provider's stateless endpoint, with the key read from the environment or the local `.env`.
+- Three Python modules of plain functions, no speculative abstractions: `parser.py` owns canonical records, chunks, and search; `extract.py` owns the extraction schedule, the findings contract, and the findings store; `dashboard.py` owns the bundle, prepared questions, and the bundle check. Strict pydantic records with invariants in validators; SHA-256 fingerprints over sorted JSON. The web app in `web/` is React with TypeScript strict mode, Vite, Tailwind, and native elements; no component library or design tooling without a demonstrated need, and `web/src/types.ts` mirrors the Python records.
+- Canonical text is never normalized. Derived rows are rebuilt each run and verified by the read-only `--check`. Findings live in a separate `findings.sqlite` the parser never opens, bound to passage IDs plus fingerprints with no foreign keys into the transcripts database; `extract.py --check` flags stale records and never relabels them. Fail closed with an actionable `ValueError`.
+- IDs: documents `E<n>`, passages `E1:B0032`, citations `E1:P021`, chunks `E1:X0024`, batches `E1:S03`, company contexts `E1:C01`, findings `E1:F001`. Findings store physical passage IDs and display citation IDs. Quote and attribute through `render_passages`, never from chunk text or headers.
 - 120-character lines, double quotes, type hints on public functions, docstrings only for the non-obvious. A `# ponytail:` comment marks a deliberate simplification and its ceiling.
 
 ### Tests
 
-- `unittest` in `test_parser.py`: synthetic fixtures via python-docx in temporary directories; real-file tests gated on the private manifest, failing rather than skipping when its files are missing. One meaningful check per piece of logic. Prefer the supplied files; use the existing fixture for edge cases they lack.
-- Definition of done, on Python 3.11: `pyflakes parser.py test_parser.py`, `python -m unittest -v test_parser.py`, `python parser.py`, `python parser.py --check`.
+- `unittest`, one test module per module (`test_parser.py`, `test_extract.py`, `test_dashboard.py`): synthetic fixtures via python-docx in temporary directories; real-file tests gated on the private manifest, failing rather than skipping when its files are missing. One meaningful check per piece of logic. Prefer the supplied files; use the existing fixture for edge cases they lack.
+- Definition of done, on Python 3.11: `pyflakes parser.py test_parser.py extract.py test_extract.py dashboard.py test_dashboard.py`, `python -m unittest -v test_parser.py test_extract.py test_dashboard.py`, `python parser.py`, `python parser.py --check`, `python extract.py --batches`, `python extract.py --check` and `python dashboard.py --build` then `--check` whenever a findings database exists; for the web app, `npm test` (Vitest, including the rendered smoke test over the real bundle) and `npm run build` (type-check plus Vite build) in `web/`.
 
 ### Docs
 
@@ -103,7 +103,7 @@ After each milestone: check it, correct the largest observed failure, then conti
 
 ### Working practices
 
-Project skills in `.claude/skills/` hold the procedures; invoke them by name. `systematic-debugging` before changing code for any failure or surprise. `verification-before-completion` before any "done" or any commit. `test-driven-development` for any change to `parser.py`.
+Project skills in `.claude/skills/` hold the procedures; invoke them by name. `systematic-debugging` before changing code for any failure or surprise. `verification-before-completion` before any "done" or any commit. `test-driven-development` for any change to `parser.py`, `extract.py`, `dashboard.py`, or `web/src/lib/`.
 
 ## Skill bank
 
@@ -113,7 +113,7 @@ Skills package expert procedures and are invoked with the Skill tool or `/name`.
 | --- | --- |
 | `systematic-debugging`, `verification-before-completion`, `test-driven-development` (project) | See Working practices. |
 | `claude-api` | Before any code or answer involving Claude models, pricing, limits, or caching. Never from memory. |
-| `code-review` | Before committing a change to `parser.py` or `test_parser.py`. |
+| `code-review` | Before committing a change to `parser.py`, `extract.py`, `dashboard.py`, or their tests. |
 | `simplify` | After tests pass, to cut duplication or over-building. |
 | `security-review` | Before hosting, adding credentials, or exposing an upload or question path. |
 | `run` | Once an app exists, to see a change working for real. |

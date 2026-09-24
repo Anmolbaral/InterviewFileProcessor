@@ -25,10 +25,12 @@ __pycache__/
 .coverage
 htmlcov/
 
-# Frontend dependencies and build output
+# Frontend dependencies, build output, and the generated data bundle (contains transcript text)
 node_modules/
 .next/
 dist/
+*.tsbuildinfo
+/web/src/data/
 
 # Local machine files
 .DS_Store
@@ -37,7 +39,3 @@ dist/
 # Local planning drafts, kept out of Git until reviewed
 /MVP-BUILD-BRIEF.md
 /BUILD-TEST-ROADMAP.md
-
-# Impeccable design tool: installed locally with npx, never tracked
-/.claude/skills/impeccable/
-/.claude/agents/impeccable-*.md

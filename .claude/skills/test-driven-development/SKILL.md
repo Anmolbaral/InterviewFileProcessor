@@ -9,20 +9,21 @@ The parser's job is to be trusted, and a test written after the code tends to de
 
 ## Loop
 
-1. **Red.** Add or extend a test in `test_parser.py` that states the required behavior. Run just that test and watch it fail for the reason you expect, not from a typo or an import error:
+1. **Red.** Add or extend a test in the module's test file (`test_parser.py` or `test_extract.py`) that states the required behavior. Run just that test and watch it fail for the reason you expect, not from a typo or an import error:
 
    ```sh
    python -m unittest -v test_parser.ParserTests.test_name
+   python -m unittest -v test_extract.ExtractTests.test_name
    ```
 
-2. **Green.** Make the smallest change in `parser.py` that turns it green. Resist fixing neighbors or improving names while red; note them and come back.
+2. **Green.** Make the smallest change in the module under test that turns it green. Resist fixing neighbors or improving names while red; note them and come back.
 3. **Refactor.** With the suite green, remove duplication and restore clarity. Rerun the full suite after each refactor step.
-4. **Finish** with the definition of done in AGENTS.md: pyflakes, the whole suite, `python parser.py`, `python parser.py --check`.
+4. **Finish** with the definition of done in AGENTS.md: pyflakes, both suites, `python parser.py`, `python parser.py --check`, `python extract.py --batches`.
 
 ## Where tests come from
 
-- Prefer the supplied transcripts through the existing `ProvidedTranscriptTests` class; they exercise both transcript templates and are what the product actually ships against. These tests skip without the private manifest, so a behavior that must be tested in a fresh clone also needs a synthetic case.
-- For edge cases the real files lack, extend the existing `fixture()` in `test_parser.py` or build a small python-docx document in the temporary directory, as the nested-runs test does. Do not invent large fixtures.
+- Prefer the supplied transcripts through the existing `ProvidedTranscript*` classes; they exercise both transcript templates and are what the product actually ships against. These tests skip without the private manifest, so a behavior that must be tested in a fresh clone also needs a synthetic case.
+- For edge cases the real files lack, extend `fixture()` in `test_parser.py` or `write_fixture()` in `test_extract.py`, or build a small python-docx document in the temporary directory, as the nested-runs test does. Do not invent large fixtures.
 - One meaningful check per piece of logic. Assert on observable records, such as passage IDs, texts, warnings, chunk memberships, or search hits, not on implementation details.
 - Tampering and failure paths count as behavior: a test that proves `--check` rejects a changed row is worth more than a second test of the happy path.
 
