@@ -1,0 +1,20 @@
+[
+  {
+    "expert": 1,
+    "source": "Synquery FULL-transcript_ITSM Test_Expert1.docx",
+    "sha256": "a789729b958d4f42b8a040fe227f8f0a50f868b4812aaa39f7859840b6d0eb95",
+    "paragraphs": 326
+  },
+  {
+    "expert": 2,
+    "source": "Synquery_FULL-transcript_ITSM Test_Expert2.docx",
+    "sha256": "55b4879e0c5f2027f5c5e84ce0ac98cc580c3f6500ec050e7cbc87d71c0374c0",
+    "paragraphs": 169
+  },
+  {
+    "expert": 3,
+    "source": "Synquery_FULL-transcript_ITSM Test_Expert3.docx",
+    "sha256": "962101e5fcb3e76c0452c4615729bf4a8166df73ff3b02a475ff6c29a6898da1",
+    "paragraphs": 157
+  }
+]

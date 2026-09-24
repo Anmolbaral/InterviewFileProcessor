@@ -1,0 +1,650 @@
+{
+ "rubric_version": "1.0.0",
+ "excluded": [
+  {
+   "case": "G10",
+   "run": "r4",
+   "why": "E1:F038 calls scalability 'the top criterion' for the single-factor question"
+  }
+ ],
+ "labels": [
+  {
+   "store": "results/judge-negatives/negative-01-G01-G02.sqlite",
+   "case": "G01/G02",
+   "split": "holdout",
+   "raw": false,
+   "expected": "fail",
+   "seeded": true,
+   "note": "E1:F001: current platform stated as ServiceNow, not custom"
+  },
+  {
+   "store": "results/judge-negatives/negative-02-G02.sqlite",
+   "case": "G02",
+   "split": "holdout",
+   "raw": false,
+   "expected": "fail",
+   "seeded": true,
+   "note": "E1:F012: Thermo capability moved to current"
+  },
+  {
+   "store": "results/judge-negatives/negative-03-G03.sqlite",
+   "case": "G03",
+   "split": "holdout",
+   "raw": false,
+   "expected": "fail",
+   "seeded": true,
+   "note": "E1:F083: exact ratio, merged"
+  },
+  {
+   "store": "results/judge-negatives/negative-04-G05.sqlite",
+   "case": "G05",
+   "split": "holdout",
+   "raw": false,
+   "expected": "fail",
+   "seeded": true,
+   "note": "E2:F008: AIOps turned on (keyword trap)"
+  },
+  {
+   "store": "results/judge-negatives/negative-05-G05.sqlite",
+   "case": "G05",
+   "split": "holdout",
+   "raw": false,
+   "expected": "fail",
+   "seeded": true,
+   "note": "E3:F064: analytics add-on purchased"
+  },
+  {
+   "store": "results/judge-negatives/negative-06-G06.sqlite",
+   "case": "G06",
+   "split": "holdout",
+   "raw": false,
+   "expected": "fail",
+   "seeded": true,
+   "note": "E3:F069: conditional move stated as decided"
+  },
+  {
+   "store": "results/judge-negatives/negative-07-G08.sqlite",
+   "case": "G08",
+   "split": "holdout",
+   "raw": false,
+   "expected": "fail",
+   "seeded": true,
+   "note": "E1:F078: SAP and security integrations asserted"
+  },
+  {
+   "store": "results/judge-negatives/negative-08-G09.sqlite",
+   "case": "G09",
+   "split": "holdout",
+   "raw": false,
+   "expected": "fail",
+   "seeded": true,
+   "note": "E1:F090: environments purchased; the correct clarification is left in the qualification (trap)"
+  },
+  {
+   "store": "results/judge-negatives/negative-09-G10.sqlite",
+   "case": "G10",
+   "split": "holdout",
+   "raw": false,
+   "expected": "fail",
+   "seeded": true,
+   "note": "E1:F035: ranking reordered, scalability first"
+  },
+  {
+   "store": "results/judge-negatives/negative-10-G11.sqlite",
+   "case": "G11",
+   "split": "holdout",
+   "raw": false,
+   "expected": "fail",
+   "seeded": true,
+   "note": "E2:F023: first two criteria swapped"
+  },
+  {
+   "store": "results/judge-negatives/negative-11-G13.sqlite",
+   "case": "G13",
+   "split": "holdout",
+   "raw": false,
+   "expected": "fail",
+   "seeded": true,
+   "note": "E2:F079: five-month plan calculated"
+  },
+  {
+   "store": "results/judge-negatives/negative-12-G15.sqlite",
+   "case": "G15",
+   "split": "holdout",
+   "raw": false,
+   "expected": "fail",
+   "seeded": true,
+   "note": "E1:F074: full-time; the 30-40% qualification is left in place (trap)"
+  },
+  {
+   "store": "results/judge-negatives/negative-13-G16.sqlite",
+   "case": "G16",
+   "split": "holdout",
+   "raw": false,
+   "expected": "fail",
+   "seeded": true,
+   "note": "E1:F092: stored as 9 on the 1-7 scale"
+  },
+  {
+   "store": "results/judge-negatives/negative-14-G17.sqlite",
+   "case": "G17",
+   "split": "holdout",
+   "raw": false,
+   "expected": "fail",
+   "seeded": true,
+   "note": "E3:F005: prior Ivanti moved to Solara"
+  },
+  {
+   "store": "results/runs/1.6.0-r1/findings.sqlite",
+   "case": "G01/G02",
+   "split": "dev",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r1/findings.sqlite",
+   "case": "G02",
+   "split": "dev",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r1/findings.sqlite",
+   "case": "G03",
+   "split": "dev",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r1/findings.sqlite",
+   "case": "G05",
+   "split": "dev",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r1/findings.sqlite",
+   "case": "G06",
+   "split": "dev",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r1/findings.sqlite",
+   "case": "G08",
+   "split": "dev",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r1/findings.sqlite",
+   "case": "G09",
+   "split": "dev",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r1/findings.sqlite",
+   "case": "G10",
+   "split": "dev",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r1/findings.sqlite",
+   "case": "G11",
+   "split": "dev",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r1/findings.sqlite",
+   "case": "G13",
+   "split": "dev",
+   "raw": true,
+   "expected": "fail",
+   "note": "no finding cites both timing passages"
+  },
+  {
+   "store": "results/runs/1.6.0-r1/findings.sqlite",
+   "case": "G15",
+   "split": "dev",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r1/findings.sqlite",
+   "case": "G16",
+   "split": "dev",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r1/findings.sqlite",
+   "case": "G17",
+   "split": "dev",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r2/findings.sqlite",
+   "case": "G01/G02",
+   "split": "dev",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r2/findings.sqlite",
+   "case": "G02",
+   "split": "dev",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r2/findings.sqlite",
+   "case": "G03",
+   "split": "dev",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r2/findings.sqlite",
+   "case": "G05",
+   "split": "dev",
+   "raw": true,
+   "expected": "fail",
+   "note": "statement lists GRC as an included module; only the qualification says started (user decision)"
+  },
+  {
+   "store": "results/runs/1.6.0-r2/findings.sqlite",
+   "case": "G06",
+   "split": "dev",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r2/findings.sqlite",
+   "case": "G08",
+   "split": "dev",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r2/findings.sqlite",
+   "case": "G09",
+   "split": "dev",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r2/findings.sqlite",
+   "case": "G10",
+   "split": "dev",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r2/findings.sqlite",
+   "case": "G11",
+   "split": "dev",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r2/findings.sqlite",
+   "case": "G13",
+   "split": "dev",
+   "raw": true,
+   "expected": "fail",
+   "note": "no finding cites both timing passages"
+  },
+  {
+   "store": "results/runs/1.6.0-r2/findings.sqlite",
+   "case": "G15",
+   "split": "dev",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r2/findings.sqlite",
+   "case": "G16",
+   "split": "dev",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r2/findings.sqlite",
+   "case": "G17",
+   "split": "dev",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r3/findings.sqlite",
+   "case": "G01/G02",
+   "split": "dev",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r3/findings.sqlite",
+   "case": "G02",
+   "split": "dev",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r3/findings.sqlite",
+   "case": "G03",
+   "split": "dev",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r3/findings.sqlite",
+   "case": "G05",
+   "split": "dev",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r3/findings.sqlite",
+   "case": "G06",
+   "split": "dev",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r3/findings.sqlite",
+   "case": "G08",
+   "split": "dev",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r3/findings.sqlite",
+   "case": "G09",
+   "split": "dev",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r3/findings.sqlite",
+   "case": "G10",
+   "split": "dev",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r3/findings.sqlite",
+   "case": "G11",
+   "split": "dev",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r3/findings.sqlite",
+   "case": "G13",
+   "split": "dev",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r3/findings.sqlite",
+   "case": "G15",
+   "split": "dev",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r3/findings.sqlite",
+   "case": "G16",
+   "split": "dev",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r3/findings.sqlite",
+   "case": "G17",
+   "split": "dev",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r4/findings.sqlite",
+   "case": "G01/G02",
+   "split": "holdout",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r4/findings.sqlite",
+   "case": "G02",
+   "split": "holdout",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r4/findings.sqlite",
+   "case": "G03",
+   "split": "holdout",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r4/findings.sqlite",
+   "case": "G05",
+   "split": "holdout",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r4/findings.sqlite",
+   "case": "G06",
+   "split": "holdout",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r4/findings.sqlite",
+   "case": "G08",
+   "split": "holdout",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r4/findings.sqlite",
+   "case": "G09",
+   "split": "holdout",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r4/findings.sqlite",
+   "case": "G11",
+   "split": "holdout",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r4/findings.sqlite",
+   "case": "G13",
+   "split": "holdout",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r4/findings.sqlite",
+   "case": "G15",
+   "split": "holdout",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r4/findings.sqlite",
+   "case": "G16",
+   "split": "holdout",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r4/findings.sqlite",
+   "case": "G17",
+   "split": "holdout",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r5/findings.sqlite",
+   "case": "G01/G02",
+   "split": "holdout",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r5/findings.sqlite",
+   "case": "G02",
+   "split": "holdout",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r5/findings.sqlite",
+   "case": "G03",
+   "split": "holdout",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r5/findings.sqlite",
+   "case": "G05",
+   "split": "holdout",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r5/findings.sqlite",
+   "case": "G06",
+   "split": "holdout",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r5/findings.sqlite",
+   "case": "G08",
+   "split": "holdout",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r5/findings.sqlite",
+   "case": "G09",
+   "split": "holdout",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r5/findings.sqlite",
+   "case": "G10",
+   "split": "holdout",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r5/findings.sqlite",
+   "case": "G11",
+   "split": "holdout",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r5/findings.sqlite",
+   "case": "G13",
+   "split": "holdout",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r5/findings.sqlite",
+   "case": "G15",
+   "split": "holdout",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r5/findings.sqlite",
+   "case": "G16",
+   "split": "holdout",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  },
+  {
+   "store": "results/runs/1.6.0-r5/findings.sqlite",
+   "case": "G17",
+   "split": "holdout",
+   "raw": true,
+   "expected": "pass",
+   "note": "all rubric items expressed; no violation"
+  }
+ ]
+}

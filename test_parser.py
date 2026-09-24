@@ -342,7 +342,7 @@ class ParserTests(unittest.TestCase):
             self.assertEqual(database.read_bytes(), before)
 
 
-@unittest.skipUnless(MANIFEST.is_file(), "Private transcript manifest is not configured; synthetic tests still run.")
+@unittest.skipUnless(MANIFEST.is_file(), "Transcript manifest (inputs/manifest.json) is missing; synthetic tests still run.")
 class ProvidedTranscriptTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

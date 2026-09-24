@@ -1,0 +1,50 @@
+FAIL    raw FAIL    G01/G02 current employer and Thermo Fisher stay distinct
+        E1:P021 must keep Thermo Fisher's ServiceNow deployment historical
+        judge on raw output (claude-sonnet-5, not in the gate): FAIL - M3 not_met: No finding states that Thermo Fisher ran ServiceNow citing E1:P021.
+ABSENT  raw ABSENT  G02 compliance discussion returns to Thermo Fisher
+        0 records: 
+        judge on raw output (claude-sonnet-5, not in the gate): ABSENT - no finding cites this case's passages
+NOT_RUN raw NOT_RUN G03 Thermo cost is implementation TCO
+        E1:P201 must preserve ServiceNow's roughly double implementation cost vs competitors (sections not processed: E1:S06, E1:S05, E1:S07, E1:S08)
+        judge on raw output (claude-sonnet-5, not in the gate): NOT_RUN - sections not processed: E1:S06
+PASS    raw PASS    G04 Xena/Abzena does not create two proven employers
+        1 records: E1:C01
+FAIL    raw FAIL    G05 module status stays installed/evaluated/considered/unpurchased
+        Thermo's GRC status is 'started implementing', not a confirmed installed module; retain the possible ServiceNow asset-management module at E1:P049; Calloway's AIOps is being evaluated and is not turned on (sections not processed: E3:S07)
+        judge on raw output (claude-sonnet-5, not in the gate): NOT_RUN - sections not processed: E3:S07
+NOT_RUN raw NOT_RUN G06 future ServiceNow moves stay conditional
+        2 records: E2:F084, E2:F085 (sections not processed: E3:S08)
+        judge on raw output (claude-sonnet-5, not in the gate): NOT_RUN - sections not processed: E3:S08
+NOT_RUN raw NOT_RUN G07/G08 interviewer premises are not supporting evidence
+        148 records: E1:F001, E1:F002, E2:F001, E2:F002, E2:F003, E2:F004, E2:F005, E2:F006, E2:F007, E2:F008, E2:F009, E2:F010, E2:F011, E2:F012, E2:F013, E2:F014, E2:F015, E2:F016, E2:F017, E2:F018, E2:F019, E2:F020, E2:F021, E2:F022, E2:F023, E2:F024, E2:F025, E2:F026, E2:F027, E2:F028, E2:F029, E2:F030, E2:F031, E2:F032, E2:F033, E2:F034, E2:F035, E2:F036, E2:F037, E2:F038, E2:F039, E2:F040, E2:F041, E2:F042, E2:F043, E2:F044, E2:F045, E2:F046, E2:F047, E2:F048, E2:F049, E2:F050, E2:F051, E2:F052, E2:F053, E2:F054, E2:F055, E2:F056, E2:F057, E2:F058, E2:F059, E2:F060, E2:F061, E2:F062, E2:F063, E2:F064, E2:F065, E2:F066, E2:F067, E2:F068, E2:F069, E2:F070, E2:F071, E2:F072, E2:F073, E2:F074, E2:F075, E2:F076, E2:F077, E2:F078, E2:F079, E2:F080, E2:F081, E2:F082, E2:F083, E2:F084, E2:F085, E3:F001, E3:F002, E3:F003, E3:F004, E3:F005, E3:F006, E3:F007, E3:F008, E3:F009, E3:F010, E3:F011, E3:F012, E3:F013, E3:F014, E3:F015, E3:F016, E3:F017, E3:F018, E3:F019, E3:F020, E3:F021, E3:F022, E3:F023, E3:F024, E3:F025, E3:F026, E3:F027, E3:F028, E3:F029, E3:F030, E3:F031, E3:F032, E3:F033, E3:F034, E3:F035, E3:F036, E3:F037, E3:F038, E3:F039, E3:F040, E3:F041, E3:F042, E3:F043, E3:F044, E3:F045, E3:F046, E3:F047, E3:F048, E3:F049, E3:F050, E3:F051, E3:F052, E3:F053, E3:F054, E3:F055, E3:F056, E3:F057, E3:F058, E3:F059, E3:F060, E3:F061 (sections not processed: E1:S03, E1:S04, E1:S05, E1:S06, E1:S07, E1:S08, E1:S09, E3:S06, E3:S07, E3:S08, E3:S09)
+NOT_RUN raw NOT_RUN G08 compliance and integration claims stay within the expert's answer
+        0 records:  (sections not processed: E1:S05)
+        judge on raw output (claude-sonnet-5, not in the gate): NOT_RUN - sections not processed: E1:S05
+NOT_RUN raw NOT_RUN G09 testing-access clarification qualifies the P237 yes
+        P245 must clarify testing-user access, not a purchase of separate environments (sections not processed: E1:S06)
+        judge on raw output (claude-sonnet-5, not in the gate): NOT_RUN - sections not processed: E1:S06
+NOT_RUN raw NOT_RUN G10 Thermo ranking and decisive reason remain distinct
+        E1's strict ranking puts integration before scalability; E1 later identifies scalability as the decisive reason (sections not processed: E1:S03)
+        judge on raw output (claude-sonnet-5, not in the gate): NOT_RUN - sections not processed: E1:S03
+PASS    raw PASS    G11 Calloway ranking and BMC choice rationale are retained
+        9 records: E2:F012, E2:F013, E2:F014, E2:F015, E2:F016, E2:F017, E2:F018, E2:F025, E2:F026
+        judge on raw output (claude-sonnet-5, not in the gate): PASS - M1 met (E2:F012, E2:F013, E2:F014, E2:F015, E2:F016): Findings F012–F016 together state the five criteria in the exact order given in E2:P047: total cost of ownership, compliance workflows, implementation speed, integration capability, ease of administration.; M2 met (E2:F017): E2:F017 explicitly states BMC gave the best balance of cost and compliance readiness, matching E2:P055 and citing it as supporting evidence.; N1 clear: No finding presents the five criteria in an order different from that stated in E2:P047; all ranking findings match the original sequence.
+NOT_RUN raw NOT_RUN G12 Thermo expected and actual rollout durations preserve months
+        no finding preserves 9-12 months from E1:P176; no finding preserves 6-7 months from E1:P192 (sections not processed: E1:S05)
+NOT_RUN raw NOT_RUN G13 BMC timing tension remains linked and unreconciled
+        link the faster-than-expected and original-plan delay accounts as unresolved (sections not processed: E2:L01)
+        judge on raw output (claude-sonnet-5, not in the gate): NOT_RUN - sections not processed: E2:L01
+NOT_RUN raw NOT_RUN G14 license prices retain company, amount, unit, currency, and stated basis
+        4 records: E2:F063, E2:F064, E2:F065, E2:F066 (sections not processed: E1:S03, E3:S06)
+NOT_RUN raw NOT_RUN G15 Thermo staffing is not full-time headcount
+        retain 3-5 employees as an allocated headcount, not an FTE figure; retain each employee's 30-40 percent time allocation; retain the use of partners for complex work (sections not processed: E1:S04)
+        judge on raw output (claude-sonnet-5, not in the gate): NOT_RUN - sections not processed: E1:S04
+NOT_RUN raw NOT_RUN G16 continuation rating preserves the 1-7 versus 9/10 mismatch
+        preserve the expert's 9/10 answer; show that the interviewer asked for a 1-7 rating (sections not processed: E1:S07)
+        judge on raw output (claude-sonnet-5, not in the gate): NOT_RUN - sections not processed: E1:S07
+PASS    raw PASS    G17 Ivanti products and experience are not conflated
+        2 records: E3:F006, E2:F009
+        judge on raw output (claude-sonnet-5, not in the gate): PASS - M1 met (E3:F006): E3:F006 states the previous employer ran Ivanti Service Manager, formerly Ivanti Heat, on-premises, citing E3:P017, matching the source.; M2 met (E2:F009): E2:F009 states Ivanti Neurons for ITSM was evaluated at Calloway and not chosen, citing E2:P039, matching the source.; N1 clear (E3:F006, E2:F009): Findings citing E2:P039 or E3:P017 keep Solara's Freshservice use and the expert's prior Ivanti experience at the unnamed previous employer clearly separated, with no merging or misattribution to Solara.
+NOT_RUN raw NOT_RUN G18 no market-share percentage is inferred from interviews
+        0 records:  (sections not processed: E1:S03, E1:S04, E1:S05, E1:S06, E1:S07, E1:S08, E1:S09, E3:S06, E3:S07, E3:S08, E3:S09)
+3 of 18 cases pass after review, 3 on unedited model output (0 of 5 model company contexts edited; 0 of 148 model findings edited) in results/runs/1.5.0/findings.sqlite

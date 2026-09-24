@@ -1,0 +1,212 @@
+E1:F001 [vendor_relationship; custom or unnamed system; deployed; firsthand_report; model; proposed] Xena currently uses a custom ITSM.
+    supports: E1:P016
+E1:F002 [vendor_relationship; ServiceNow; previously_used; firsthand_report; model; proposed] Xena previously used ServiceNow for ITSM.
+    supports: E1:P016
+E1:F003 [company_scale; custom or unnamed system; relationship not stated; expert_estimate; model; proposed] Thermo Fisher was about a $40B company.
+    supports: E1:P021
+    quantity: {'raw': 'about a $40B company', 'value': 40.0, 'approximate': True, 'unit': 'billion', 'currency': 'USD', 'carried': []}
+E1:F004 [company_scale; custom or unnamed system; relationship not stated; expert_estimate; model; proposed] Thermo Fisher had roughly 2,000 sites.
+    supports: E1:P021
+    quantity: {'raw': 'roughly 2,000 sites', 'value': 2000.0, 'approximate': True, 'unit': 'sites', 'carried': []}
+E1:F005 [company_scale; custom or unnamed system; relationship not stated; expert_estimate; model; proposed] Thermo Fisher handled around 2M tickets annually.
+    supports: E1:P021
+    quantity: {'raw': 'around 2M tickets annually', 'value': 2.0, 'approximate': True, 'unit': 'million tickets', 'period': 'year', 'carried': []}
+E1:F006 [vendor_relationship; ServiceNow; previously_used; firsthand_report; model; proposed] The expert used ServiceNow at Thermo Fisher, which he described as a very large implementation.
+    supports: E1:P021
+E1:F007 [vendor_relationship; ServiceNow; previously_used; firsthand_report; model; proposed] ServiceNow modules in use at Thermo Fisher included Incident, Request, Problem, Change, and Knowledge, plus a full CMDB, Asset Management, Major Incident Management, and HR, with many HR service requests running through ServiceNow.
+    supports: E1:P021
+E1:F008 [vendor_relationship; ServiceNow; previously_used; firsthand_report; model; proposed] Thermo Fisher had started implementing GRC, Governance, Risk, and Compliance, as another ServiceNow module.
+    supports: E1:P021, E1:P037
+    qualifications: Described as started, not as a completed module deployment. The expert later confirmed the module name was GRC after the interviewer said GRSD.
+E1:F009 [selection_criteria; ServiceNow; relationship not stated; firsthand_report; model; proposed] The expert identified the core reason for adopting ServiceNow as improving service levels (SLAs), MTTR, and the user experience from an IT perspective, above the other drivers he listed.
+    supports: E1:P025
+    context: E1:P023
+E1:F010 [selection_criteria; ServiceNow; relationship not stated; firsthand_report; model; proposed] Adopting ServiceNow was about consolidating many IT tools, some of which were paper-based.
+    supports: E1:P033
+    context: E1:P023, E1:P031
+E1:F011 [selection_criteria; ServiceNow; relationship not stated; firsthand_report; model; proposed] Better compliance was another driver for ServiceNow because the organization is subject to heavy regulations including SOC, ISO, GxP, and SOC 2, and ServiceNow can help with controls around IT assets and equipment.
+    supports: E1:P033
+    context: E1:P023
+E1:F012 [selection_criteria; ServiceNow; relationship not stated; firsthand_report; model; proposed] Asset management was adopted because they needed better inventory of assets to support lifecycle management.
+    supports: E1:P041
+    context: E1:P023, E1:P039
+E1:F013 [selection_criteria; ServiceNow; relationship not stated; firsthand_report; model; proposed] HR service delivery on ServiceNow was driven by HR handling many tickets by phone, paper, and email, and needing one system for service delivery and tracking.
+    supports: E1:P041
+    context: E1:P023, E1:P039
+E1:F014 [selection_criteria; custom or unnamed system; relationship not stated; firsthand_report; model; proposed] Pain points and complaints about slowness in process and service levels started at manufacturing sites and divisions, with site leads, IT partners, and division leads, and commonality across sites and divisions is what moved the issue up.
+    supports: E1:P045
+    context: E1:P023, E1:P043
+E1:F015 [implementation; ServiceNow; relationship not stated; firsthand_report; model; proposed] After site and division commonality was recognized, the effort became a strategic digital transformation and global IT initiative and was implemented globally.
+    supports: E1:P045
+    context: E1:P023, E1:P043
+E1:F016 [implementation; ServiceNow; relationship not stated; firsthand_report; model; proposed] ServiceNow was validated, and marking a change as GxP-related triggered routing and change-process workflows that Zendesk did not have, covering a typical path in which an IT change goes to Quality, Quality opens a change, and it is approved, reviewed, and possibly tested.
+    supports: E1:P057
+    context: E1:P051
+E1:F017 [selection_criteria; ServiceNow; relationship not stated; firsthand_report; model; proposed] ServiceNow offered more customization and out-of-the-box functionality than Zendesk, including advanced routing and workflows for GxP processes.
+    supports: E1:P057
+    context: E1:P051
+E1:F018 [vendor_relationship; ServiceNow; previously_used; firsthand_report; model; proposed] Abzena had ServiceNow at one point before the current custom solution.
+    supports: E1:P049
+    context: E1:P047
+E1:F019 [implementation; custom or unnamed system; relationship not stated; firsthand_report; model; proposed] The move to the custom ITSM was made by the expert's predecessor, predated him, and is a decision he says they have to live with.
+    supports: E1:P049
+    context: E1:P047
+E1:F020 [implementation; Microsoft Teams; relationship not stated; firsthand_report; model; proposed] The custom solution integrates with Microsoft Teams so a user can talk to it and it can create a ticket; it can recognize an IT issue, try troubleshooting, and create a ticket if it cannot resolve the issue.
+    supports: E1:P049
+    context: E1:P047
+E1:F021 [vendor_relationship; ServiceNow; previously_used; opinion; model; proposed] The expert says that at the time of the change ServiceNow's agents were not as advanced, the custom solution was more simplified, and its backend is easier to manage.
+    supports: E1:P049
+    context: E1:P047
+E1:F022 [implementation; custom or unnamed system; relationship not stated; opinion; model; proposed] The expert is not sure why they made the move; he thinks it was poorly implemented and that they then decided to switch.
+    supports: E1:P049
+    context: E1:P047
+    qualifications: He says the decision was not his and predated him. The passage does not explicitly say whether 'poorly implemented' refers to ServiceNow or the custom solution.
+E1:F023 [implementation; custom or unnamed system; relationship not stated; firsthand_report; model; proposed] A repercussion of the custom solution is that they do not really have asset management for all IT assets, which is a current pain point for the expert.
+    supports: E1:P049
+    context: E1:P047
+E1:F024 [vendor_relationship; ServiceNow; hypothetical; hypothetical; model; proposed] They are looking at possibly implementing only the ServiceNow asset management piece to categorize GMP equipment and IT assets.
+    supports: E1:P049
+    context: E1:P047
+E1:F025 [implementation; ServiceNow; relationship not stated; opinion; model; proposed] The ServiceNow implementation at Thermo Fisher was quite complex.
+    supports: E1:P176
+    context: E1:P174, E1:P169
+E1:F026 [implementation; ServiceNow; relationship not stated; expert_estimate; model; proposed] The ServiceNow implementation at Thermo Fisher took roughly 9 to 12 months to fully complete.
+    supports: E1:P176
+    qualifies: E1:P192
+    context: E1:P174, E1:P169
+    quantity: {'raw': 'roughly 9-12 months', 'low': 9.0, 'high': 12.0, 'approximate': True, 'unit': 'months', 'basis': 'time to fully complete', 'carried': []}
+    qualifications: A later account confirms the 9 to 12 month duration and adds that they had expected 6 to 7 months and absorbed roughly another quarter.
+E1:F027 [implementation; ServiceNow; relationship not stated; opinion; model; proposed] The expert identified the lack of a clear definition of done as a biggest implementation pain point, because so much customization made scope boundaries fuzzy.
+    supports: E1:P176
+    qualifies: E1:P192
+    context: E1:P174, E1:P169
+    qualifications: He later describes that ambiguity as a combination of working with ServiceNow and an integrator, including gaps between how ServiceNow used to run implementations and how partners operate, rather than customization alone.
+E1:F028 [implementation; ServiceNow; relationship not stated; opinion; model; proposed] The expert identified underestimating the internal effort required as a biggest implementation pain point.
+    supports: E1:P176
+    context: E1:P174, E1:P169
+E1:F029 [implementation; ServiceNow; relationship not stated; firsthand_report; model; proposed] User testing was not clearly defined, so the team had to pull in people who were not expecting to participate, and securing their time was difficult.
+    supports: E1:P176
+    context: E1:P174, E1:P169
+E1:F030 [implementation; ServiceNow; relationship not stated; opinion; model; proposed] The expert judged that ServiceNow integrated well.
+    supports: E1:P180
+    context: E1:P174, E1:P178
+E1:F031 [implementation; ServiceNow; relationship not stated; firsthand_report; model; proposed] Building the ServiceNow integrations took time.
+    supports: E1:P180
+    context: E1:P174, E1:P178
+E1:F032 [implementation; ServiceNow; relationship not stated; firsthand_report; model; proposed] They set up single sign-on with Active Directory for ServiceNow.
+    supports: E1:P180
+    context: E1:P174, E1:P178
+E1:F033 [implementation; ServiceNow; relationship not stated; firsthand_report; model; proposed] They integrated Workday with ServiceNow.
+    supports: E1:P180
+    context: E1:P174, E1:P178
+E1:F034 [implementation; ServiceNow; relationship not stated; opinion; model; proposed] The expert judged that the ServiceNow integrations were not plug-and-play.
+    supports: E1:P180
+    context: E1:P174, E1:P178
+E1:F035 [implementation; ServiceNow; relationship not stated; firsthand_report; model; proposed] Engineers and the identity access management team had to do quite a bit of ServiceNow integration work, including back-and-forth on APIs, customization, changes on both sides, and permissions.
+    supports: E1:P180
+    context: E1:P174, E1:P178
+E1:F036 [implementation; ServiceNow; relationship not stated; firsthand_report; model; proposed] ServiceNow Integration Hub was not available at the time of the Thermo Fisher implementation, so integration was mostly custom work using direct APIs.
+    supports: E1:P184
+    qualifies: E1:P188
+    context: E1:P174, E1:P182
+    qualifications: He later adds that some out-of-the-box APIs existed, but they could not connect to certain legacy systems and tools, so the team built a middle layer.
+E1:F037 [implementation; ServiceNow; relationship not stated; firsthand_report; model; proposed] ServiceNow had some out-of-the-box APIs, but those APIs would not connect to some legacy systems and tools, so the team built a middle layer to make them communicate.
+    supports: E1:P188
+    context: E1:P174, E1:P186
+E1:F038 [implementation; ServiceNow; relationship not stated; firsthand_report; model; proposed] They wanted to bring Databricks data related to certain service tickets into ServiceNow. A Databricks connector existed, but it could not access a lot of legacy ERP data feeding Databricks, so they wrote a custom API.
+    supports: E1:P188
+    context: E1:P174, E1:P186
+E1:F039 [implementation; ServiceNow; relationship not stated; opinion; model; proposed] The expert thinks the lack of a clear definition of done came from a combination of working with ServiceNow and an integrator.
+    supports: E1:P192
+    context: E1:P174, E1:P190
+E1:F040 [implementation; ServiceNow; relationship not stated; opinion; model; proposed] The expert believes there should be commonality between ServiceNow’s preferred implementation playbook and what partners do, and that gaps exist between how ServiceNow used to run implementations and how partners operate today.
+    supports: E1:P192
+    context: E1:P174, E1:P190
+E1:F041 [implementation; ServiceNow; relationship not stated; opinion; model; proposed] The expert believes ServiceNow and the partner ecosystem are misaligned on how long implementations really take.
+    supports: E1:P192
+    context: E1:P174, E1:P190
+E1:F042 [implementation; ServiceNow; relationship not stated; opinion; model; proposed] The expert believes implementation partners need to be clearer about the level of effort required and what the implementation plan looks like.
+    supports: E1:P192
+    context: E1:P174, E1:P190
+E1:F043 [implementation; ServiceNow; relationship not stated; firsthand_report; model; proposed] They expected the ServiceNow implementation at Thermo Fisher to take 6 to 7 months.
+    supports: E1:P192
+    context: E1:P174, E1:P190
+    quantity: {'raw': '6-7 month', 'low': 6.0, 'high': 7.0, 'approximate': False, 'unit': 'month', 'basis': 'expected implementation duration', 'carried': []}
+E1:F044 [implementation; ServiceNow; relationship not stated; expert_estimate; model; proposed] Relative to the 6 to 7 month expectation, the 9 to 12 month ServiceNow implementation meant they had to absorb roughly another quarter.
+    supports: E1:P192
+    context: E1:P174, E1:P190
+    quantity: {'raw': 'roughly another quarter', 'approximate': True, 'unit': 'quarter', 'basis': 'beyond expected implementation duration', 'carried': []}
+E1:F045 [pricing; ServiceNow; relationship not stated; expert_estimate; model; proposed] ServiceNow implementation total cost of ownership was roughly double compared with its competitors.
+    supports: E1:P201
+    context: E1:P174, E1:P199
+    quantity: {'raw': 'roughly double', 'approximate': True, 'basis': 'implementation total cost of ownership compared to competitors', 'carried': []}
+E1:F046 [pricing; ServiceNow; relationship not stated; firsthand_report; model; proposed] Against expectations, the biggest miss was the internal level of effort and commitment to pull additional resources into testing and validation, treated as a soft cost because those people were taken off other tasks.
+    supports: E1:P205
+    context: E1:P174, E1:P195, E1:P203
+E1:F047 [pricing; ServiceNow; relationship not stated; expert_estimate; model; proposed] That internal testing and validation effort added another 20-30% in cost.
+    supports: E1:P205
+    context: E1:P174, E1:P195, E1:P203
+    quantity: {'raw': 'another 20-30% in cost', 'low': 20.0, 'high': 30.0, 'approximate': True, 'unit': 'percent', 'basis': 'soft cost', 'carried': []}
+E1:F048 [pricing; ServiceNow; relationship not stated; prompted_agreement; model; proposed] Total cost of ownership ended up roughly 20-30% higher than initial expectations, primarily because internal labor for testing and validation was underestimated.
+    supports: E1:P209
+    context: E1:P174, E1:P195, E1:P207
+    quantity: {'raw': 'roughly 20-30% higher', 'low': 20.0, 'high': 30.0, 'approximate': True, 'unit': 'percent', 'basis': 'higher than initial expectations', 'carried': []}
+E1:F049 [pricing; ServiceNow; relationship not stated; firsthand_report; model; proposed] The single biggest contributor to the cost variance was underestimating the validation effort required from business users.
+    supports: E1:P213
+    context: E1:P174, E1:P195, E1:P211
+E1:F050 [pricing; ServiceNow; relationship not stated; firsthand_report; model; proposed] Unexpected licensing add-ons raised the price: GRC was not included as assumed, and parts of change management were recalled as an extra cost, so an assumed full package was not all-inclusive.
+    supports: E1:P217
+    context: E1:P174, E1:P195, E1:P215
+E1:F051 [pricing; ServiceNow; relationship not stated; firsthand_report; model; proposed] Separate licenses were required for approvers, and roles were split among read-only, approver, ITIL, admin, and standard users.
+    supports: E1:P229
+    context: E1:P174, E1:P227
+E1:F052 [pricing; ServiceNow; relationship not stated; firsthand_report; model; proposed] Purchasing those approver licenses was somewhat unexpected: they knew about the requirement, but it still caught them off guard.
+    supports: E1:P233
+    context: E1:P174, E1:P227, E1:P231
+E1:F053 [pricing; ServiceNow; relationship not stated; firsthand_report; model; proposed] They underestimated how many business users would need to test workflows and how many business users were committed to the project.
+    supports: E1:P241
+    qualifies: E1:P245
+    context: E1:P174, E1:P195, E1:P235, E1:P237, E1:P243
+    qualifications: An initial yes to unexpected non-production instance costs was superseded: he agreed the surprise was the number of people needing testing access, not the purchase of separate non-production environments.
+E1:F054 [pricing; ServiceNow; relationship not stated; expert_estimate; model; proposed] The contract-renewal price increase was somewhere around 3-5%.
+    supports: E1:P249
+    context: E1:P174, E1:P195, E1:P247
+    quantity: {'raw': 'somewhere around 3-5%', 'low': 3.0, 'high': 5.0, 'approximate': True, 'unit': 'percent', 'carried': []}
+E1:F055 [implementation; ServiceNow; hypothetical; hypothetical; model; proposed] A hypothetical switch away from ServiceNow would be very difficult, around 7-8 on a scale of 1 to 10, short of an ERP switch he would rate 10 and describes as a multi-million-dollar project taking 2-3 years.
+    supports: E1:P295
+    context: E1:P288
+    quantity: {'raw': 'around 7-8', 'low': 7.0, 'high': 8.0, 'approximate': True, 'basis': 'scale of 1 to 10', 'carried': []}
+E1:F056 [implementation; ServiceNow; hypothetical; hypothetical; model; proposed] A hypothetical switch away from ServiceNow would still require a significant investment of around $1M-$1.5M.
+    supports: E1:P295
+    context: E1:P288
+    quantity: {'raw': 'around $1M-$1.5M', 'low': 1000000.0, 'high': 1500000.0, 'approximate': True, 'currency': 'USD', 'basis': 'significant investment', 'carried': []}
+E1:F057 [implementation; ServiceNow; hypothetical; hypothetical; model; proposed] Implementation of a hypothetical switch away from ServiceNow would take at least a year.
+    supports: E1:P295
+    context: E1:P288
+    quantity: {'raw': 'at least a year', 'low': 1.0, 'approximate': False, 'period': 'year', 'basis': 'implementation', 'carried': []}
+E1:F058 [implementation; ServiceNow; hypothetical; hypothetical; model; proposed] What makes switching away from ServiceNow difficult is the implementation effort and the common underestimation of the resources required for validation.
+    supports: E1:P299
+    context: E1:P288, E1:P297
+E1:F059 [selection_criteria; ServiceNow; hypothetical; hypothetical; model; proposed] Significant performance issues would be a reason to seriously consider migrating away from ServiceNow.
+    supports: E1:P303
+    context: E1:P288, E1:P301
+E1:F060 [pricing; ServiceNow; hypothetical; hypothetical; model; proposed] A 30-50% cost increase, to the point it becomes unbearable, would be another reason to switch away from ServiceNow.
+    supports: E1:P303
+    context: E1:P288, E1:P301
+    quantity: {'raw': '30-50%', 'low': 30.0, 'high': 50.0, 'approximate': False, 'unit': 'percent', 'basis': 'cost increase', 'carried': []}
+E1:F061 [selection_criteria; custom or unnamed system; hypothetical; hypothetical; model; proposed] Lower implementation cost is a definite factor in seriously considering an alternative such as Atlassian or Freshservice.
+    supports: E1:P307
+    qualifies: E1:P311
+    context: E1:P288, E1:P305, E1:P309
+    qualifications: He agreed that a competitor's significantly lower price, faster implementation with a clear data-migration path, and a compelling AI story, taken together, would be enough to seriously consider a switch despite high barriers.
+E1:F062 [selection_criteria; ServiceNow; hypothetical; hypothetical; model; proposed] An alternative leaning into AI would matter in seriously considering a switch from ServiceNow to a system such as Atlassian or Freshservice.
+    supports: E1:P307
+    qualifies: E1:P311
+    context: E1:P288, E1:P305, E1:P309
+    qualifications: He agreed that a competitor's significantly lower price, faster implementation with a clear data-migration path, and a compelling AI story, taken together, would be enough to seriously consider a switch despite high barriers.
+E1:F063 [selection_criteria; ServiceNow; hypothetical; hypothetical; model; proposed] An alternative's ability to port data from ServiceNow and reduce implementation time would be significant in considering a switch to a system such as Atlassian or Freshservice.
+    supports: E1:P307
+    qualifies: E1:P311
+    context: E1:P288, E1:P305, E1:P309
+    qualifications: He agreed that a competitor's significantly lower price, faster implementation with a clear data-migration path, and a compelling AI story, taken together, would be enough to seriously consider a switch despite high barriers.
+63 findings in results/runs/1.3.0-pilot/findings.sqlite

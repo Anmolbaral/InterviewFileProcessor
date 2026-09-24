@@ -20,7 +20,7 @@ from lxml import etree
 from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, model_validator
 
 BASE = Path(__file__).resolve().parent
-DEFAULT_MANIFEST = BASE / "analysis/transcripts/manifest.json"
+DEFAULT_MANIFEST = BASE / "inputs/manifest.json"
 DEFAULT_DATABASE = BASE / "data/parsed/transcripts.sqlite"
 PARSER_VERSION = "1.1.0"
 W = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"

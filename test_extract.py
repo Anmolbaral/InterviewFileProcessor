@@ -964,7 +964,7 @@ class QuantityNormalizationTests(unittest.TestCase):
         self.assertTrue(any("1 to 7" in q and "9 out of 10" in q for q in finding.qualifications))
 
 
-@unittest.skipUnless(MANIFEST.is_file(), "Private transcript manifest is not configured; synthetic tests still run.")
+@unittest.skipUnless(MANIFEST.is_file(), "Transcript manifest (inputs/manifest.json) is missing; synthetic tests still run.")
 class ProvidedTranscriptExtractionTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -1323,7 +1323,7 @@ class ProvidedTranscriptExtractionTests(unittest.TestCase):
                         "G09 testing-access clarification qualifies the P237 yes"]
                     self.assertEqual(result[0], expected, result[1])
 
-    @unittest.skipUnless(DEFAULT_FINDINGS.is_file(), "Private saved model responses are not available.")
+    @unittest.skipUnless(DEFAULT_FINDINGS.is_file(), "No local findings store at data/parsed/findings.sqlite.")
     def test_replayed_qualified_collisions_restore_saved_proposals_without_rewriting_history(self):
         """Replay the main run's one collision and, when available, the pilot's eight; no model calls or writes."""
         sources = [(DEFAULT_FINDINGS, "1.2.0", 1)]

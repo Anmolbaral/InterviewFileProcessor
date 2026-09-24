@@ -1,0 +1,50 @@
+PASS    raw FAIL    G01/G02 current employer and Thermo Fisher stay distinct
+        3 records: E1:F001, E1:F002, E1:F006
+        judge on raw output (claude-sonnet-5, not in the gate): PASS - M1 met (E1:F001): E1:F001 states the expert's current company (Xena) currently has a custom ITSM, citing E1:P016.; M2 met (E1:F002, E1:F022): E1:F002 (citing E1:P016) and E1:F022 (citing E1:P049) both state the current employer previously used ServiceNow and moved off it.; M3 met (E1:F006): E1:F006 states the expert used ServiceNow at Thermo Fisher, citing E1:P021.
+PASS    raw PASS    G02 compliance discussion returns to Thermo Fisher
+        2 records: E1:F020, E1:F021
+        judge on raw output (claude-sonnet-5, not in the gate): PASS - M1 met (E1:F020, E1:F021): Both findings cite E1:P057 and attribute the validated-system and GxP change-workflow advantages over Zendesk to Thermo Fisher, tagged as Expert 1's historical employer.; N1 clear: Both findings explicitly label the company as 'Thermo Fisher (historical)', the previous employer, not the current employer, so the capabilities are not attributed to the current employer.
+FAIL    raw FAIL    G03 Thermo cost is implementation TCO
+        E1:F078 is filed under Pharma Company; E1:F079 is filed under Pharma Company; E1:F080 is filed under Pharma Company; E1:F081 is filed under Pharma Company; E1:F082 is filed under Pharma Company; E1:F083 is filed under Pharma Company; E1:F084 is filed under Pharma Company; E1:F085 is filed under Pharma Company; E1:F100 is filed under Pharma Company; E1:F101 is filed under Pharma Company; E1:F102 is filed under Pharma Company; E1:F103 is filed under Pharma Company; E1:F104 is filed under Pharma Company; E1:F105 is filed under Pharma Company
+        judge on raw output (claude-sonnet-5, not in the gate): PASS - M1 met (E1:F078): F078 states ServiceNow's implementation TCO was roughly double competitors', marked as approximate, citing E1:P201.; N1 clear: F078 presents the TCO comparison as an approximation without merging it with the P110 license comparison or giving an exact ratio.
+PASS    raw ABSENT  G04 Xena/Abzena does not create two proven employers
+        1 records: E1:C01
+FAIL    raw FAIL    G05 module status stays installed/evaluated/considered/unpurchased
+        Solara's analytics add-on has not been purchased
+        judge on raw output (claude-sonnet-5, not in the gate): FAIL - M6 not_met: No finding cites E3:P131 to state Solara has not purchased the analytics add-on, even though the source passage supports it.
+PASS    raw FAIL    G06 future ServiceNow moves stay conditional
+        5 records: E2:F095, E2:F096, E3:F077, E3:F079, E3:F080
+        judge on raw output (claude-sonnet-5, not in the gate): PASS - M1 met (E2:F095, E2:F096): Both findings frame the ServiceNow evaluation as contingent on Calloway leadership deciding to switch, matching the conditional evidence in E2:P156.; M2 met (E3:F076, E3:F077): These findings tie Solara's ServiceNow re-evaluation explicitly to significant growth (tripling in size), matching the conditional evidence in E3:P140.; N1 clear: All relevant findings describe the moves as hypothetical and conditional (e.g., 'if switched', 'if scaled significantly'), with none asserting an active, planned, or decided move.
+FAIL    raw FAIL    G07/G08 interviewer premises are not supporting evidence
+        E1:F124 uses interviewer passage(s) as support: E1:P145; E1:F125 uses interviewer passage(s) as support: E1:P145; E1:F126 uses interviewer passage(s) as support: E1:P145; E1:F127 uses interviewer passage(s) as support: E1:P145; E1:F128 uses interviewer passage(s) as support: E1:P145
+PASS    raw PASS    G08 compliance and integration claims stay within the expert's answer
+        7 records: E1:F020, E1:F021, E1:F069, E1:F070, E1:F071, E1:F073, E1:F074
+        judge on raw output (claude-sonnet-5, not in the gate): PASS - N1 clear: No finding asserts a SOX capability; both findings citing E1:P057 discuss only GxP-related validation and workflows.; N2 clear: Findings citing E1:P180 and E1:P188 describe AD/Workday SSO and a Databricks/legacy-ERP custom API, not SAP or security-tool integrations.
+PASS    raw PASS    G09 testing-access clarification qualifies the P237 yes
+        1 records: E1:F084
+        judge on raw output (claude-sonnet-5, not in the gate): PASS - M1 met (E1:F084): The finding's statement directly attributes the unexpected cost to underestimating the number of business users needing test workflow access, citing E1:P241.; M2 met (E1:F084): The qualifications explicitly note that the initial yes in E1:P237 is qualified by the later clarification (E1:P245), satisfying the requirement that the yes not be stated alone.; N1 clear (E1:F084): The finding explicitly negates the purchase of separate non-production environments, stating the cost was about unexpected user numbers rather than separate environments.
+PASS    raw PASS    G10 Thermo ranking and decisive reason remain distinct
+        7 records: E1:F037, E1:F039, E1:F044, E1:F046, E1:F047, E1:F048, E1:F049
+        judge on raw output (claude-sonnet-5, not in the gate): FAIL - N1 violated (E1:F037): F037's qualification states 'the expert later said scalability was the top criterion, rather than integration,' explicitly merging the strict ranking (integration first) with the decisive reason (scalability), presenting scalability as the top-ranked criterion.
+PASS    raw FAIL    G11 Calloway ranking and BMC choice rationale are retained
+        9 records: E2:F029, E2:F032, E2:F033, E2:F034, E2:F035, E2:F036, E2:F037, E2:F038, E2:F039
+        judge on raw output (claude-sonnet-5, not in the gate): PASS - M1 met (E2:F029): E2:F029 states the five criteria in the exact order (TCO, compliance, implementation speed, integration, ease of administration) citing E2:P047, matching the source.; M2 met (E2:F033): E2:F033 states BMC was chosen as the best balance of cost and compliance readiness, citing E2:P055, matching the source.; N1 clear: No finding citing E2:P047 asserts a different order; E2:F029 and others confirm the correct order.
+FAIL    raw FAIL    G12 Thermo expected and actual rollout durations preserve months
+        no finding preserves 9-12 months from E1:P176; no finding preserves 6-7 months from E1:P192
+NOT_RUN raw NOT_RUN G13 BMC timing tension remains linked and unreconciled
+        E2:P089 must keep its 7-month quantity and unit; E2:P139 must keep its 2-month quantity and unit; link the faster-than-expected and original-plan delay accounts as unresolved (sections not processed: E2:L01)
+        judge on raw output (claude-sonnet-5, not in the gate): NOT_RUN - sections not processed: E2:L01
+FAIL    raw FAIL    G14 license prices retain company, amount, unit, currency, and stated basis
+        E1:F053 must preserve the source currency wording 'dollars'; E1:F054 must preserve the source currency wording 'dollars'; E1:F055 must preserve the source currency wording 'dollars'; E2:F075 must retain per user per month; E2:F075 must preserve the source currency wording 'dollars'; E2:F075 must label its basis as quote; E2:F076 must retain per user per month; E2:F076 must preserve the source currency wording 'dollars'; E2:F077 must retain per user per month; E3:F006 must preserve the source currency wording 'dollars'; E3:F007 must preserve the source currency wording 'dollars'; E3:F008 must preserve the source currency wording 'dollars'
+PASS    raw PASS    G15 Thermo staffing is not full-time headcount
+        5 records: E1:F110, E1:F111, E1:F112, E1:F113, E1:F114
+        judge on raw output (claude-sonnet-5, not in the gate): PASS - M1 met (E1:F111): F111 states about 3-5 employees maintained ServiceNow, citing E1:P171.; M2 met (E1:F112): F112 states each employee spent about 30-40% of their time, citing E1:P171.; M3 met (E1:F113): F113 states partners were engaged for major upgrades or complex work, citing E1:P171.; N1 clear: No finding describes the employees as full-time or FTEs or presents an FTE figure.
+ABSENT  raw ABSENT  G16 continuation rating preserves the 1-7 versus 9/10 mismatch
+        preserve the expert's 9/10 answer; show that the interviewer asked for a 1-7 rating
+        judge on raw output (claude-sonnet-5, not in the gate): FAIL - M1 not_met: No finding states that the expert answered 9 out of 10 with supporting citation to E1:P254; P254 only appears as context in unrelated findings.; M2 not_met: No finding records the 1-7 vs 9/10 scale mismatch citing E1:P252 or E1:P254 as supporting evidence.
+PASS    raw FAIL    G17 Ivanti products and experience are not conflated
+        3 records: E3:F019, E3:F020, E2:F024
+        judge on raw output (claude-sonnet-5, not in the gate): PASS - M1 met (E3:F037): E3:F037 states that at the expert's previous employer (a larger industrial services company) they ran Ivanti Service Manager, formerly Ivanti Heat, on-premises, matching the item and citing E3:P017.; M2 met (E2:F024): E2:F024, citing E2:P039, records that Calloway (Life Sciences Firm) evaluated Ivanti Neurons for ITSM as an alternative, with the relationship explicitly marked 'evaluated' rather than 'deployed', matching the item's claim that it was evaluated without being purchased.; N1 clear: All findings citing E3:P017 or E2:P039 keep the two experiences separate—Expert 3's prior Ivanti Service Manager use is consistently attributed to his previous employer, and Calloway's Ivanti Neurons evaluation is attributed to the Life Sciences Firm—so no finding merges the products or misattributes Ivanti use to Solara.
+PASS    raw PASS    G18 no market-share percentage is inferred from interviews
+        0 records: 
+11 of 18 cases pass after review, 6 on unedited model output (2 of 6 model company contexts edited; 0 of 304 model findings edited) in results/runs/1.2.0/findings.sqlite

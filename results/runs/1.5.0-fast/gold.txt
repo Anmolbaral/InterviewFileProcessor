@@ -1,0 +1,50 @@
+FAIL    raw FAIL    G01/G02 current employer and Thermo Fisher stay distinct
+        E1:P021 must keep Thermo Fisher's ServiceNow deployment historical
+        judge on raw output (claude-sonnet-5, not in the gate): FAIL - M3 not_met (E1:F034): F034 asserts ServiceNow was deployed at Thermo Fisher but cites E1:P016, E1:P262, E1:P286 and context E1:P260, E1:P247, never citing the required E1:P021 passage.
+ABSENT  raw ABSENT  G02 compliance discussion returns to Thermo Fisher
+        0 records: 
+        judge on raw output (claude-sonnet-5, not in the gate): ABSENT - no finding cites this case's passages
+ABSENT  raw ABSENT  G03 Thermo cost is implementation TCO
+        E1:P201 must preserve ServiceNow's roughly double implementation cost vs competitors
+        judge on raw output (claude-sonnet-5, not in the gate): ABSENT - no finding cites this case's passages
+PASS    raw PASS    G04 Xena/Abzena does not create two proven employers
+        1 records: E1:C01
+FAIL    raw FAIL    G05 module status stays installed/evaluated/considered/unpurchased
+        Thermo's GRC status is 'started implementing', not a confirmed installed module; retain the possible ServiceNow asset-management module at E1:P049; Calloway's AIOps is being evaluated and is not turned on; Solara's Project module was recently turned on; Solara's analytics add-on has not been purchased
+        judge on raw output (claude-sonnet-5, not in the gate): FAIL - M1 not_met: No finding citing E1:P021 was provided among the findings list.; M2 not_met: No finding citing E1:P049 was provided among the findings list.; M5 not_met (E3:F004): E3:F004 lists Project as a deployed module alongside others but does not convey that it was 'recently turned on' as a distinct recent event.; M6 not_met: No finding mentions the analytics add-on or its purchase status for Solara, citing E3:P131.
+FAIL    raw FAIL    G06 future ServiceNow moves stay conditional
+        E2:F066 must remain hypothetical, not evaluated/opinion; E3:F059 must remain hypothetical, not evaluated/firsthand_report
+        judge on raw output (claude-sonnet-5, not in the gate): PASS - M1 met (E2:F066): E2:F066 states ServiceNow would be evaluated only if budget allowed, matching the conditional nature described in E2:P156.; M2 met (E3:F059): E3:F059 frames looking at ServiceNow as contingent on a hypothetical switch, mirroring the conditional trigger in E3:P144 (and implicitly the growth condition in E3:P140).; N1 clear: All relevant findings (E2:F066, E3:F058, E3:F059) describe the moves as hypothetical or conditional, none assert an active, planned, or decided move.
+PASS    raw PASS    G07/G08 interviewer premises are not supporting evidence
+        168 records: E1:F001, E1:F002, E1:F003, E1:F004, E1:F005, E1:F006, E1:F007, E1:F008, E1:F009, E1:F010, E1:F011, E1:F012, E1:F013, E1:F014, E1:F015, E1:F016, E1:F017, E1:F018, E1:F019, E1:F020, E1:F021, E1:F022, E1:F023, E1:F024, E1:F025, E1:F026, E1:F027, E1:F028, E1:F029, E1:F030, E1:F031, E1:F032, E1:F033, E1:F034, E1:F035, E1:F036, E1:F037, E1:F038, E1:F039, E1:F040, E1:F041, E1:F042, E1:F043, E2:F001, E2:F002, E2:F003, E2:F004, E2:F005, E2:F006, E2:F007, E2:F008, E2:F009, E2:F010, E2:F011, E2:F012, E2:F013, E2:F014, E2:F015, E2:F016, E2:F017, E2:F018, E2:F019, E2:F020, E2:F021, E2:F022, E2:F023, E2:F024, E2:F025, E2:F026, E2:F027, E2:F028, E2:F029, E2:F030, E2:F031, E2:F032, E2:F033, E2:F034, E2:F035, E2:F036, E2:F037, E2:F038, E2:F039, E2:F040, E2:F041, E2:F042, E2:F043, E2:F044, E2:F045, E2:F046, E2:F047, E2:F048, E2:F049, E2:F050, E2:F051, E2:F052, E2:F053, E2:F054, E2:F055, E2:F056, E2:F057, E2:F058, E2:F059, E2:F060, E2:F061, E2:F062, E2:F063, E2:F064, E2:F065, E2:F066, E3:F001, E3:F002, E3:F003, E3:F004, E3:F005, E3:F006, E3:F007, E3:F008, E3:F009, E3:F010, E3:F011, E3:F012, E3:F013, E3:F014, E3:F015, E3:F016, E3:F017, E3:F018, E3:F019, E3:F020, E3:F021, E3:F022, E3:F023, E3:F024, E3:F025, E3:F026, E3:F027, E3:F028, E3:F029, E3:F030, E3:F031, E3:F032, E3:F033, E3:F034, E3:F035, E3:F036, E3:F037, E3:F038, E3:F039, E3:F040, E3:F041, E3:F042, E3:F043, E3:F044, E3:F045, E3:F046, E3:F047, E3:F048, E3:F049, E3:F050, E3:F051, E3:F052, E3:F053, E3:F054, E3:F055, E3:F056, E3:F057, E3:F058, E3:F059
+FAIL    raw FAIL    G08 compliance and integration claims stay within the expert's answer
+        E1:F029 asserts an unconfirmed security tools integration
+        judge on raw output (claude-sonnet-5, not in the gate): FAIL - N2 violated (E1:F029): E1:F029 explicitly asserts integration with SAP and security tools while citing E1:P180, contradicting the item that only AD/Workday and the Databricks/legacy-ERP example are supported.
+ABSENT  raw ABSENT  G09 testing-access clarification qualifies the P237 yes
+        P245 must clarify testing-user access, not a purchase of separate environments
+        judge on raw output (claude-sonnet-5, not in the gate): ABSENT - no finding cites this case's passages
+PASS    raw PASS    G10 Thermo ranking and decisive reason remain distinct
+        2 records: E1:F004, E1:F006
+        judge on raw output (claude-sonnet-5, not in the gate): PASS - M1 met (E1:F004): F004 explicitly lists the strict ranking with integration first and scalability second, citing E1:P086.; M2 met (E1:F006): F006 states scalability was the single decisive factor that tipped the decision toward ServiceNow, citing E1:P102 as supporting evidence.; N1 clear: F004 addresses only the ranking and F006 addresses only the decisive factor; neither finding conflates the priority ranking with the decisive reason by claiming scalability is top-ranked.
+PASS    raw PASS    G11 Calloway ranking and BMC choice rationale are retained
+        9 records: E2:F010, E2:F012, E2:F013, E2:F015, E2:F017, E2:F034, E2:F035, E2:F037, E2:F038
+        judge on raw output (claude-sonnet-5, not in the gate): PASS - M1 met (E2:F010): F010 lists the five criteria in the exact order (TCO, compliance, implementation speed, integration, ease of administration) matching E2:P047 and cites that passage.; M2 met (E2:F017): F017 states BMC was selected over ServiceNow and Ivanti due to the best balance of cost and compliance readiness, citing E2:P055.; N1 clear: F010, which cites E2:P047, lists the criteria in the same order as the source passage, so no finding asserts a different order.
+FAIL    raw FAIL    G12 Thermo expected and actual rollout durations preserve months
+        no finding preserves 9-12 months from E1:P176; no finding preserves 6-7 months from E1:P192
+NOT_RUN raw NOT_RUN G13 BMC timing tension remains linked and unreconciled
+        E2:P089 must keep its 7-month quantity and unit; E2:P139 must keep its 2-month quantity and unit; link the faster-than-expected and original-plan delay accounts as unresolved (sections not processed: E2:L01)
+        judge on raw output (claude-sonnet-5, not in the gate): NOT_RUN - sections not processed: E2:L01
+ABSENT  raw ABSENT  G14 license prices retain company, amount, unit, currency, and stated basis
+        missing E1 servicenow price at E1:P110; missing E1 zendesk price at E1:P110; missing E1 jira price at E1:P110; missing E2 bmc price at E2:P110; missing E2 servicenow price at E2:P110; missing E2 ivanti price at E2:P110; missing E2 freshservice price at E2:P110; missing E3 freshservice price at E3:P098; missing E3 servicenow price at E3:P098; missing E3 ivanti price at E3:P098; missing E3 zendesk price at E3:P098
+FAIL    raw FAIL    G15 Thermo staffing is not full-time headcount
+        retain 3-5 employees as an allocated headcount, not an FTE figure; retain each employee's 30-40 percent time allocation
+        judge on raw output (claude-sonnet-5, not in the gate): PASS - M1 met (E1:F023): F023 states about 3-5 employees maintained the system, citing E1:P171.; M2 met (E1:F023): F023 states each employee spent around 30-40% of their time on it, citing E1:P171.; M3 met (E1:F023): F023 states partners were engaged for major upgrades or complex flows, citing E1:P171.; N1 clear: Neither finding describes the employees as full-time/FTE or presents an FTE figure; they instead specify 30-40% time allocation.
+PASS    raw PASS    G16 continuation rating preserves the 1-7 versus 9/10 mismatch
+        1 records: E1:F035
+        judge on raw output (claude-sonnet-5, not in the gate): PASS - M1 met (E1:F035): The finding states the expert rated it 9 out of 10, citing E1:P254.; M2 met (E1:F035): The qualifications explicitly note the question used a 1-7 scale (P252) while the answer was 9/10 (P254), and state the mismatch is not rescaled.; N1 clear: The finding explicitly states the scales differ and nothing is rescaled, so it does not assert a converted or combined 9/7 value.
+ABSENT  raw ABSENT  G17 Ivanti products and experience are not conflated
+        Expert 3's earlier on-prem Ivanti Service Manager/Heat must remain prior use; retain Ivanti Heat as the former product name; retain that Expert 3's previous Ivanti deployment was on-prem; Expert 2's Ivanti Neurons must remain an evaluated alternative
+        judge on raw output (claude-sonnet-5, not in the gate): FAIL - M2 not_met (E2:F011): E2:F011 states Calloway evaluated Ivanti Neurons for ITSM (citing E2:P039) but does not state or imply that Calloway did not purchase it, so the 'without buying it' aspect is unexpressed.
+PASS    raw PASS    G18 no market-share percentage is inferred from interviews
+        0 records: 
+6 of 18 cases pass after review, 6 on unedited model output (0 of 4 model company contexts edited; 0 of 168 model findings edited) in results/runs/1.5.0-fast/findings.sqlite

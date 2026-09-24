@@ -1,0 +1,667 @@
+E1:F001 [vendor_relationship; custom ITSM; deployed; firsthand_report; model; proposed] Xena currently runs a custom ITSM.
+    supports: E1:P016
+    context: E1:P001
+    qualifications: The interview header names the expert's current employer Pharma Company, while the expert calls the current company Xena; the passages do not explicitly state that these are the same legal name.
+E1:F002 [vendor_relationship; ServiceNow; previously_used; firsthand_report; model; proposed] Xena previously used ServiceNow.
+    supports: E1:P016
+    context: E1:P001
+    qualifications: The expert says ServiceNow use was previous and that the current platform is a custom ITSM; the passage does not give dates or describe a formal replacement. | The interview header names the expert's current employer Pharma Company, while the expert calls the current company Xena; the passages do not explicitly state that these are the same legal name.
+E2:F001 [company_scale; custom or unnamed system; relationship not stated; firsthand_report; model; proposed] Calloway Biosciences is a mid-size biopharmaceutical manufacturer.
+    supports: E2:P017
+    context: E2:P002
+    qualifications: Mid-size is the expert's label; no headcount, revenue, or other numeric measure is given. | Header names the current employer Life Sciences Firm; the expert names Calloway Biosciences. Same current Director of IT Service Management role, but the passages do not explicitly equate the names.
+E2:F002 [vendor_relationship; BMC Helix ITSM; deployed; firsthand_report; model; proposed] Calloway Biosciences runs BMC Helix ITSM, and the expert still owns that platform and the vendor relationship with BMC.
+    supports: E2:P017
+    context: E2:P002
+    qualifications: Header names the current employer Life Sciences Firm; the expert names Calloway Biosciences. Same current Director of IT Service Management role, but the passages do not explicitly equate the names.
+E2:F003 [vendor_relationship; custom or unnamed system; previously_used; firsthand_report; model; proposed] Calloway Biosciences replaced an unnamed legacy on-prem system when it moved to BMC Helix ITSM.
+    supports: E2:P017
+    context: E2:P002
+    qualifications: The replaced system is described only as a legacy on-prem system; no vendor or product name is given. | This is not a prior BMC deployment; BMC Helix ITSM is the platform it was replaced with. | Header names the current employer Life Sciences Firm; the expert names Calloway Biosciences. Same current Director of IT Service Management role, but the passages do not explicitly equate the names.
+E2:F004 [implementation; BMC Helix ITSM; deployed; firsthand_report; model; proposed] The expert led Calloway Biosciences' move off a legacy on-prem system onto BMC Helix ITSM.
+    supports: E2:P017
+    context: E2:P002
+    qualifications: The legacy on-prem system that was replaced is not named. | Header names the current employer Life Sciences Firm; the expert names Calloway Biosciences. Same current Director of IT Service Management role, but the passages do not explicitly equate the names.
+E2:F005 [vendor_relationship; ServiceNow; deployed; firsthand_report; model; proposed] Before her current employer, the expert spent six years at a larger CDMO, where she ran a ServiceNow environment.
+    supports: E2:P017
+    quantity: {'raw': 'six years', 'value': 6.0, 'approximate': False, 'unit': 'years', 'period': 'year', 'basis': 'time spent at the prior CDMO', 'carried': []}
+    qualifications: The CDMO is not named, so no company context was created and this is not attributed to Calloway Biosciences. | Six years is her tenure at that CDMO, not an explicit statement that ServiceNow was in use for the entire period. | She has since left that employer; the source does not say the CDMO stopped using ServiceNow, so the relationship is deployed rather than previously used. | The CDMO is described only as larger, with no numeric scale.
+E2:F006 [company_scale; custom or unnamed system; relationship not stated; expert_estimate; model; proposed] The company was described as a few hundred million in revenue, and not a forty-billion-dollar company, in explaining why cost mattered to the purchase.
+    supports: E2:P043
+    context: E2:P017, E2:P020
+    quantity: {'raw': 'a few hundred million in revenue', 'approximate': True, 'currency': 'dollars', 'basis': 'revenue', 'carried': ['currency']}
+    qualifications: The forty-billion-dollar figure is a contrast, not this company's scale. The revenue figure is approximate, and no time period such as annual is stated. The dollar sign appears on the contrast figure in the same sentence, not on this revenue figure.
+E2:F007 [company_scale; custom or unnamed system; relationship not stated; firsthand_report; model; proposed] Three people support the ITSM platform.
+    supports: E2:P043
+    context: E2:P017, E2:P020
+    quantity: {'raw': 'three people', 'value': 3.0, 'approximate': False, 'basis': 'people supporting the platform', 'carried': []}
+    qualifications: This is the platform support team, not total company headcount.
+E2:F008 [vendor_relationship; ServiceNow; evaluated; firsthand_report; model; proposed] ServiceNow was evaluated as an alternative in the ITSM platform selection and was not the option chosen.
+    supports: E2:P039
+    qualifies: E2:P017, E2:P055
+    context: E2:P020, E2:P037
+    qualifications: This is the selection at the current employer. The expert's earlier ServiceNow environment was at a larger CDMO, a different employer, and is not this deployment. A later answer compares ServiceNow as a rejected alternative on price.
+E2:F009 [vendor_relationship; Ivanti Neurons for ITSM; evaluated; firsthand_report; model; proposed] Ivanti Neurons for ITSM was evaluated as an alternative in the same selection and was not the option chosen.
+    supports: E2:P039
+    qualifies: E2:P055
+    context: E2:P017, E2:P020, E2:P037
+    qualifications: Later answers shorten the name to Ivanti. The later comparison treats it as a close-priced alternative that was not selected.
+E2:F010 [vendor_relationship; Freshservice; evaluated; firsthand_report; model; proposed] Freshservice was evaluated as an alternative in the same selection and was not the option chosen.
+    supports: E2:P039
+    qualifies: E2:P051
+    context: E2:P017, E2:P020, E2:P037
+    qualifications: A later answer says it dropped down the list quickly because its compliance workflow story was thinner. That does not say the company ever ran it.
+E2:F011 [vendor_relationship; Jira Service Management; evaluated; firsthand_report; model; proposed] Jira Service Management was looked at briefly and ruled out early because it lacked the depth needed for CMDB and compliance workflows.
+    supports: E2:P039
+    context: E2:P017, E2:P020, E2:P037
+    qualifications: Ruled out early means considered and rejected, not deployed. This passage does not say Jira was included in the later multi-year quote request.
+E2:F012 [selection_criteria; custom or unnamed system; relationship not stated; firsthand_report; model; proposed] In the strict priority ranking, total cost of ownership was the first purchasing criterion.
+    supports: E2:P047
+    qualifies: E2:P043
+    context: E2:P017, E2:P020, E2:P045
+    qualifications: Before that ranking, the expert said cost was near the top because of company size, and used cost rather than the phrase total cost of ownership. This rank is separate from the later single decisive reason.
+E2:F013 [selection_criteria; custom or unnamed system; relationship not stated; firsthand_report; model; proposed] Out-of-the-box support for compliance workflows was the second-ranked purchasing criterion, described earlier as GxP-style approval workflows out of the box.
+    supports: E2:P047, E2:P043
+    context: E2:P017, E2:P020, E2:P045
+    qualifications: The ranked wording is compliance workflows; the GxP-style approval wording is from the preceding criteria list, not a separate ranked item.
+E2:F014 [selection_criteria; custom or unnamed system; relationship not stated; firsthand_report; model; proposed] Implementation speed was the third-ranked purchasing criterion.
+    supports: E2:P047
+    qualifies: E2:P043
+    context: E2:P017, E2:P020, E2:P045
+    qualifications: Implementation speed was also named in the unranked criteria list. No implementation duration, method, or project outcome is stated.
+E2:F015 [selection_criteria; custom or unnamed system; relationship not stated; firsthand_report; model; proposed] Integration capability was the fourth-ranked purchasing criterion, including integration with existing systems such as SAP and Workday.
+    supports: E2:P047, E2:P043
+    context: E2:P017, E2:P020, E2:P045
+    qualifications: SAP and Workday are examples from the unranked criteria list. The ranked item itself is stated only as integration capability.
+E2:F016 [selection_criteria; custom or unnamed system; relationship not stated; firsthand_report; model; proposed] Ease of administration for a small team was the fifth-ranked purchasing criterion.
+    supports: E2:P047
+    qualifies: E2:P043
+    context: E2:P017, E2:P020, E2:P045
+    qualifications: The preceding answer described concern about how painful administration would be for a small team and specified three people supporting the platform. That headcount is a scale fact, not a sixth criterion.
+E2:F017 [selection_criteria; BMC Helix; relationship not stated; firsthand_report; model; proposed] The single factor that tipped the decision toward BMC was price relative to capability, which the expert described as the best balance of cost and compliance readiness versus ServiceNow and Ivanti.
+    supports: E2:P055
+    context: E2:P017, E2:P020, E2:P053
+    qualifications: This decisive reason is separate from the five-item priority ranking. The expert's answer says BMC; the question names BMC Helix. No amount paid is stated. Calling the result the best balance is the expert's judgment of the decision, not a numeric score.
+E2:F018 [selection_criteria; Ivanti Neurons for ITSM; relationship not stated; firsthand_report; model; proposed] Ivanti was not chosen over BMC because its compliance and change-approval workflows needed more custom configuration to meet GxP requirements, while BMC already had more of that capability from work with other pharmaceutical and medical-device customers.
+    supports: E2:P055
+    context: E2:P017, E2:P020, E2:P039, E2:P053
+    qualifications: This is an evaluation comparison, not a completed Ivanti implementation. The answer says Ivanti and BMC; the fuller names are Ivanti Neurons for ITSM and BMC Helix. Other pharma and med-device customers are not named. Price closeness is a separate pricing statement.
+E2:F019 [selection_criteria; Freshservice; relationship not stated; firsthand_report; model; proposed] Freshservice dropped down the list quickly because its compliance workflow story was thinner.
+    supports: E2:P051
+    context: E2:P017, E2:P020, E2:P039
+    qualifications: The same answer also says Freshservice was cheapest. That price comparison is separate, and no dollar amount is given. Thinner is the expert's assessment, not a feature inventory.
+E2:F020 [pricing; custom or unnamed system; relationship not stated; firsthand_report; model; proposed] The company asked four vendors for detailed multi-year quotes rather than year-one pricing only, and the answer discusses ServiceNow, Ivanti, BMC, and Freshservice.
+    supports: E2:P051
+    context: E2:P017, E2:P020, E2:P037, E2:P039
+    qualifications: No quote amounts are stated. The request was motivated by stories they had heard about year-two and year-three increases, not by increases they reported experiencing. Jira Service Management is not named in this quote discussion, so it is not established as one of the four. These are requested quotes, not amounts paid. BMC here is the BMC Helix selection.
+E2:F021 [pricing; ServiceNow; relationship not stated; firsthand_report; model; proposed] ServiceNow's representative was transparent about later-year price escalation.
+    supports: E2:P051
+    context: E2:P017, E2:P020, E2:P037
+    qualifications: No escalation rate, dollar amount, or year is stated. This is what the expert observed from the representative during quoting, not an amount paid.
+E2:F022 [pricing; Ivanti Neurons for ITSM; relationship not stated; firsthand_report; model; proposed] Ivanti provided a three-year price lock.
+    supports: E2:P051
+    context: E2:P017, E2:P020, E2:P039
+    quantity: {'raw': 'three-year lock', 'value': 3.0, 'approximate': False, 'unit': 'years', 'period': 'year', 'basis': 'price lock', 'carried': []}
+    qualifications: The quote answer says Ivanti; the alternatives list names Ivanti Neurons for ITSM. No dollar amount is stated. This is a quoted commitment, not an amount paid.
+E2:F023 [pricing; BMC Helix; relationship not stated; firsthand_report; model; proposed] BMC provided a multi-year pricing commitment described as similar to Ivanti's lock.
+    supports: E2:P051
+    context: E2:P017, E2:P020, E2:P037, E2:P053
+    qualifications: Similar refers to Ivanti's three-year lock; the BMC term is not stated as a number, so it is not established as three years. The answer says BMC; the selection is BMC Helix. No dollar amount is stated, and this is a quoted commitment rather than an amount paid.
+E2:F024 [pricing; Freshservice; relationship not stated; firsthand_report; model; proposed] Freshservice was the cheapest of the vendors discussed in the quote comparison.
+    supports: E2:P051
+    context: E2:P017, E2:P020, E2:P039
+    qualifications: No dollar amount is stated. This is a quote comparison, not an amount paid. The same answer says its thinner compliance workflow story caused it to drop down the list.
+E2:F025 [pricing; ServiceNow; relationship not stated; expert_estimate; model; proposed] ServiceNow's quote was almost triple the BMC quote for a comparable module set, and that multiple was not considered defensible internally for the company's size.
+    supports: E2:P055
+    context: E2:P017, E2:P020, E2:P053
+    quantity: {'raw': 'almost triple our BMC quote for a comparable module set', 'value': 3.0, 'approximate': True, 'basis': 'multiple of BMC quote for a comparable module set', 'carried': []}
+    qualifications: No currency amount is stated. Almost makes the multiple approximate. The same answer calls ServiceNow excellent, which is a judgment rather than a price fact. This compares quotes, not amounts paid. The answer says BMC; the question names BMC Helix.
+E2:F026 [pricing; Ivanti Neurons for ITSM; relationship not stated; firsthand_report; model; proposed] Ivanti's price was close to BMC's price.
+    supports: E2:P055
+    context: E2:P017, E2:P020, E2:P039, E2:P053
+    qualifications: Close is not quantified, and no dollar amount is stated. This is a quote comparison, not an amount paid. The answer says Ivanti and BMC; the fuller names are Ivanti Neurons for ITSM and BMC Helix. The custom-configuration gap is a separate selection point in the same answer.
+E2:F027 [rating; ServiceNow; evaluated; opinion; model; proposed] On integration capability, the expert rates ServiceNow a 9, the highest of the four vendors, and says its ecosystem of connectors is larger.
+    supports: E2:P060
+    context: E2:P017, E2:P020, E2:P058, E2:P053, E2:P055
+    quantity: {'raw': 'a 9', 'value': 9.0, 'approximate': False, 'carried': []}
+    qualifications: On the 1 to 10 scale requested by the interviewer. | Attached to the continuing Calloway Biosciences account; this answer does not rename the employer. | Treated as evaluated because the prior decision discussion compares BMC Helix with ServiceNow; this answer does not itself say ServiceNow was purchased or rejected. | The expert previously ran ServiceNow at a larger CDMO, and this answer does not say whether the score reflects that operating experience, the Calloway evaluation, or both.
+E2:F028 [rating; BMC Helix; deployed; opinion; model; proposed] On integration capability, the expert rates BMC an 8.
+    supports: E2:P060
+    context: E2:P017, E2:P020, E2:P058
+    quantity: {'raw': 'an 8', 'value': 8.0, 'approximate': False, 'carried': []}
+    qualifications: On the 1 to 10 scale requested by the interviewer. | The expert says BMC; BMC Helix is the name in the interviewer's question and in the current-employer account. | In the same answer ServiceNow is rated higher because its connector ecosystem is larger. | Attached to the continuing Calloway Biosciences account; this answer does not rename the employer. | Deployment status is from the expert's statement that she still owns BMC Helix, not from this rating answer.
+E2:F029 [rating; Ivanti; evaluated; opinion; model; proposed] On integration capability, the expert rates Ivanti a 7.
+    supports: E2:P060
+    context: E2:P017, E2:P020, E2:P058, E2:P053, E2:P055
+    quantity: {'raw': 'a 7', 'value': 7.0, 'approximate': False, 'carried': []}
+    qualifications: On the 1 to 10 scale requested by the interviewer. | In the same answer ServiceNow is rated higher because its connector ecosystem is larger. | Attached to the continuing Calloway Biosciences account; this answer does not rename the employer. | Treated as evaluated because the prior decision discussion compares BMC Helix with Ivanti; this answer does not itself say Ivanti was purchased or rejected.
+E2:F030 [rating; Freshservice; relationship not stated; opinion; model; proposed] On integration capability, the expert rates Freshservice a 6, the lowest of the four vendors.
+    supports: E2:P060
+    context: E2:P017, E2:P020, E2:P058
+    quantity: {'raw': 'a 6', 'value': 6.0, 'approximate': False, 'carried': []}
+    qualifications: On the 1 to 10 scale requested by the interviewer. | In the same answer ServiceNow is rated higher because its connector ecosystem is larger. | Attached to the continuing Calloway Biosciences account; this answer does not rename the employer. | The passages do not say whether Freshservice was evaluated, deployed, or previously used.
+E2:F031 [rating; Freshservice; relationship not stated; opinion; model; proposed] On total cost of ownership, the expert rates Freshservice a 9, the highest of the four, using would-be wording.
+    supports: E2:P064
+    context: E2:P017, E2:P020, E2:P062, E2:P058
+    quantity: {'raw': 'would be a 9', 'value': 9.0, 'approximate': False, 'carried': []}
+    qualifications: Continues the 1 to 10 scale from the integration question; this question does not restate the scale. | This is a rating, not a price paid or a vendor quote, and no currency amount is stated. | Would-be wording applies to the Freshservice score and is not described as a plan to switch. | She presents the TCO scores as the reverse of the integration ranking. | Attached to the continuing Calloway Biosciences account; this answer does not rename the employer. | The passages do not say whether Freshservice was evaluated, deployed, or previously used.
+E2:F032 [rating; BMC Helix; deployed; opinion; model; proposed] On total cost of ownership, the expert rates BMC an 8.
+    supports: E2:P064
+    context: E2:P017, E2:P020, E2:P062, E2:P058
+    quantity: {'raw': 'an 8', 'value': 8.0, 'approximate': False, 'carried': []}
+    qualifications: Continues the 1 to 10 scale from the integration question; this question does not restate the scale. | This is a rating, not a price paid or a vendor quote, and no currency amount is stated. | The expert says BMC; BMC Helix is the name in the interviewer's questions and in the current-employer account. | She presents the TCO scores as the reverse of the integration ranking. | Attached to the continuing Calloway Biosciences account; this answer does not rename the employer. | Deployment status is from the expert's statement that she still owns BMC Helix, not from this rating answer.
+E2:F033 [rating; Ivanti; evaluated; opinion; model; proposed] On total cost of ownership, the expert rates Ivanti a 7.
+    supports: E2:P064
+    context: E2:P017, E2:P020, E2:P062, E2:P058, E2:P053, E2:P055
+    quantity: {'raw': 'a 7', 'value': 7.0, 'approximate': False, 'carried': []}
+    qualifications: Continues the 1 to 10 scale from the integration question; this question does not restate the scale. | This is a rating, not a price paid or a vendor quote, and no currency amount is stated. | She presents the TCO scores as the reverse of the integration ranking. | Attached to the continuing Calloway Biosciences account; this answer does not rename the employer. | Treated as evaluated because the prior decision discussion compares BMC Helix with Ivanti; this answer does not itself say Ivanti was purchased or rejected.
+E2:F034 [rating; ServiceNow; evaluated; opinion; model; proposed] On total cost of ownership, the expert rates ServiceNow a 5, the lowest of the four, because it gets expensive at scale.
+    supports: E2:P064
+    context: E2:P017, E2:P020, E2:P062, E2:P058, E2:P053, E2:P055
+    quantity: {'raw': 'a 5', 'value': 5.0, 'approximate': False, 'carried': []}
+    qualifications: Continues the 1 to 10 scale from the integration question; this question does not restate the scale. | This is a rating, not a price paid or a vendor quote, and no currency amount is stated. | The low score is qualified by how expensive ServiceNow gets at scale; the answer does not define that scale or tie it to a Calloway figure. | She presents the TCO scores as the reverse of the integration ranking. | Attached to the continuing Calloway Biosciences account; this answer does not rename the employer. | Treated as evaluated because the prior decision discussion compares BMC Helix with ServiceNow; this answer does not itself say ServiceNow was purchased or rejected. | The expert previously ran ServiceNow at a larger CDMO, and this answer does not say whether the at-scale cost judgment reflects that operating experience, the Calloway evaluation, or both.
+E2:F035 [rating; Freshservice; relationship not stated; opinion; model; proposed] On ease of administration, the expert says Freshservice is probably the easiest and rates it a 9.
+    supports: E2:P068
+    context: E2:P017, E2:P020, E2:P066, E2:P058
+    quantity: {'raw': "I'd say 9", 'value': 9.0, 'approximate': True, 'carried': []}
+    qualifications: Continues the 1 to 10 scale from the integration question; this question does not restate the scale. | Hedged as probably the easiest. | Attached to the continuing Calloway Biosciences account; this answer does not rename the employer. | The passages do not say whether Freshservice was evaluated, deployed, or previously used.
+E2:F036 [rating; BMC Helix; deployed; opinion; model; proposed] On ease of administration, the expert rates BMC a 7, saying it is manageable for her small team but has a learning curve.
+    supports: E2:P068
+    context: E2:P017, E2:P020, E2:P066, E2:P058
+    quantity: {'raw': 'a 7', 'value': 7.0, 'approximate': False, 'carried': []}
+    qualifications: Continues the 1 to 10 scale from the integration question; this question does not restate the scale. | The expert says BMC; BMC Helix is the name in the interviewer's questions and in the current-employer account. | Scoped to her small team; no team headcount is given. | Attached to the continuing Calloway Biosciences account; this answer does not rename the employer. | Deployment status is from the expert's statement that she still owns BMC Helix, not from this rating answer.
+E2:F037 [rating; Ivanti; evaluated; opinion; model; proposed] On ease of administration, the expert rates Ivanti maybe a 7 and describes it as similar to BMC.
+    supports: E2:P068
+    context: E2:P017, E2:P020, E2:P066, E2:P058, E2:P053, E2:P055
+    quantity: {'raw': 'maybe a 7', 'value': 7.0, 'approximate': True, 'carried': []}
+    qualifications: Continues the 1 to 10 scale from the integration question; this question does not restate the scale. | Hedged with maybe, and likened to the BMC score in the same answer. | Attached to the continuing Calloway Biosciences account; this answer does not rename the employer. | Treated as evaluated because the prior decision discussion compares BMC Helix with Ivanti; this answer does not itself say Ivanti was purchased or rejected.
+E2:F038 [rating; ServiceNow; evaluated; opinion; model; proposed] On ease of administration, the expert rates ServiceNow a 6 for a team their size, describing it as powerful but complex.
+    supports: E2:P068
+    context: E2:P017, E2:P020, E2:P066, E2:P058, E2:P053, E2:P055
+    quantity: {'raw': 'a 6', 'value': 6.0, 'approximate': False, 'carried': []}
+    qualifications: Continues the 1 to 10 scale from the integration question; this question does not restate the scale. | Explicitly scoped to a team their size, not stated as a general rating. | Attached to the continuing Calloway Biosciences account; this answer does not rename the employer. | Treated as evaluated because the prior decision discussion compares BMC Helix with ServiceNow; this answer does not itself say ServiceNow was purchased or rejected. | The expert previously ran ServiceNow at a larger CDMO, and this answer does not say whether the complexity judgment reflects that operating experience, the Calloway evaluation, or both.
+E2:F039 [rating; BMC Helix; deployed; opinion; model; proposed] On compliance workflow support, the expert rates BMC an 8 for them specifically because pharma-specific templates were available.
+    supports: E2:P072
+    context: E2:P017, E2:P020, E2:P070, E2:P058
+    quantity: {'raw': 'an 8', 'value': 8.0, 'approximate': False, 'carried': []}
+    qualifications: Continues the 1 to 10 scale from the integration question; this question does not restate the scale. | Scoped to them specifically, not stated as a general market rating. | The expert says BMC; BMC Helix is the name in the interviewer's questions and in the current-employer account. | Attached to the continuing Calloway Biosciences account; this answer does not rename the employer. | Deployment status is from the expert's statement that she still owns BMC Helix, not from this rating answer.
+E2:F040 [rating; ServiceNow; evaluated; opinion; model; proposed] On compliance workflow support, the expert rates ServiceNow probably a 9 in raw capability, while saying a lot of it has to be built rather than used as provided.
+    supports: E2:P072
+    context: E2:P017, E2:P020, E2:P070, E2:P058, E2:P053, E2:P055
+    quantity: {'raw': 'probably a 9', 'value': 9.0, 'approximate': True, 'carried': []}
+    qualifications: Continues the 1 to 10 scale from the integration question; this question does not restate the scale. | The 9 is hedged with probably and is limited to raw capability, not out-of-the-box readiness. | Attached to the continuing Calloway Biosciences account; this answer does not rename the employer. | Treated as evaluated because the prior decision discussion compares BMC Helix with ServiceNow; this answer does not itself say ServiceNow was purchased or rejected. | The expert previously ran ServiceNow at a larger CDMO, and this answer does not say whether the capability judgment reflects that operating experience, the Calloway evaluation, or both.
+E2:F041 [rating; Ivanti; evaluated; opinion; model; proposed] On compliance workflow support, the expert rates Ivanti a 6, describing it as doable but requiring more custom work.
+    supports: E2:P072
+    context: E2:P017, E2:P020, E2:P070, E2:P058, E2:P053, E2:P055
+    quantity: {'raw': 'a 6', 'value': 6.0, 'approximate': False, 'carried': []}
+    qualifications: Continues the 1 to 10 scale from the integration question; this question does not restate the scale. | Attached to the continuing Calloway Biosciences account; this answer does not rename the employer. | Treated as evaluated because the prior decision discussion compares BMC Helix with Ivanti; this answer does not itself say Ivanti was purchased or rejected.
+E2:F042 [rating; Freshservice; relationship not stated; opinion; model; proposed] On compliance workflow support, the expert rates Freshservice maybe a 4 and says it is built more for lighter-weight IT support use cases.
+    supports: E2:P072
+    context: E2:P017, E2:P020, E2:P070, E2:P058
+    quantity: {'raw': 'maybe a 4', 'value': 4.0, 'approximate': True, 'carried': []}
+    qualifications: Continues the 1 to 10 scale from the integration question; this question does not restate the scale. | Hedged with maybe, and described as weaker on this criterion. | Attached to the continuing Calloway Biosciences account; this answer does not rename the employer. | The passages do not say whether Freshservice was evaluated, deployed, or previously used.
+E2:F043 [selection_criteria; BMC Helix; deployed; opinion; model; proposed] The expert says the smallest gap between BMC and its closest competitor is probably Ivanti.
+    supports: E2:P076
+    context: E2:P017, E2:P020, E2:P074
+    qualifications: Hedged with probably. | The expert says BMC; BMC Helix is the name in the interviewer's question and in the current-employer account. | This is a competitive-gap judgment, not a numeric rating and not the single decisive selection reason. | Attached to the continuing Calloway Biosciences account; this answer does not rename the employer. | Deployment status is from the expert's statement that she still owns BMC Helix, not from this answer.
+E2:F044 [pricing; Ivanti; evaluated; opinion; model; proposed] The expert says Ivanti is close to BMC on cost.
+    supports: E2:P076
+    context: E2:P017, E2:P020, E2:P074, E2:P053, E2:P055
+    qualifications: No cost figure, currency, or quote is stated. | This is a closeness judgment, not what was paid and not the single decisive selection reason. | The expert says BMC; BMC Helix is the name in the interviewer's question. | Attached to the continuing Calloway Biosciences account; this answer does not rename the employer. | Treated as evaluated because the prior decision discussion compares BMC Helix with Ivanti; this answer does not itself say Ivanti was purchased or rejected.
+E2:F045 [selection_criteria; Ivanti; evaluated; opinion; model; proposed] The expert says Ivanti is close to BMC on general ITSM functionality.
+    supports: E2:P076
+    context: E2:P017, E2:P020, E2:P074, E2:P053, E2:P055
+    qualifications: Separate from the cost closeness stated in the same answer, and not the single decisive selection reason. | The expert says BMC; BMC Helix is the name in the interviewer's question. | Attached to the continuing Calloway Biosciences account; this answer does not rename the employer. | Treated as evaluated because the prior decision discussion compares BMC Helix with Ivanti; this answer does not itself say Ivanti was purchased or rejected.
+E2:F046 [selection_criteria; BMC Helix; deployed; opinion; model; proposed] The expert says BMC pulled ahead of Ivanti specifically in how much pre-built compliance content it had for regulated industries.
+    supports: E2:P076
+    context: E2:P017, E2:P020, E2:P074
+    qualifications: Stated as the specific area of advantage over Ivanti, not as the single decisive selection reason. | The expert says BMC; BMC Helix is the name in the interviewer's question and in the current-employer account. | Attached to the continuing Calloway Biosciences account; this answer does not rename the employer. | Deployment status is from the expert's statement that she still owns BMC Helix, not from this answer.
+E2:F047 [selection_criteria; BMC Helix; deployed; prompted_agreement; model; proposed] The expert agrees that BMC's biggest vulnerability compared with ServiceNow is brand visibility and partner-ecosystem size, with ServiceNow having more integrators and community content.
+    supports: E2:P080
+    context: E2:P017, E2:P020, E2:P078
+    qualifications: The interviewer stated the vulnerability claim; the expert said that was fair and restated the larger ServiceNow community and integrator pool. | The same answer's account of searching for a specialized integration is a separate firsthand detail, not part of this agreement. | The interviewer and expert say BMC; BMC Helix is the name used elsewhere for the deployed platform. | Attached to the continuing Calloway Biosciences account; this answer does not rename the employer. | Deployment status is from the expert's statement that she still owns BMC Helix, not from this answer.
+E2:F048 [implementation; BMC Helix; deployed; firsthand_report; model; proposed] When they needed a specialized integration, their BMC partner pool was smaller and it sometimes took longer to find someone who had done exactly what they needed.
+    supports: E2:P080
+    context: E2:P017, E2:P020, E2:P078
+    qualifications: Firsthand detail beyond the interviewer's vulnerability claim, which the expert also called fair. | The expert says BMC and we; BMC Helix and Calloway are not renamed in this answer. | Attached to the continuing Calloway Biosciences account. | Deployment status is from the expert's statement that she still owns BMC Helix, not from this answer.
+E2:F049 [selection_criteria; BMC Helix; deployed; opinion; model; proposed] For them specifically, the expert says BMC's genuine edge over ServiceNow beyond price is out-of-the-box compliance templates and an account team with deep pharma and med device experience.
+    supports: E2:P084
+    context: E2:P017, E2:P020, E2:P082
+    qualifications: Framed as an edge beyond price, not as the single decisive selection reason. | The answer does not name ServiceNow; the comparison target is in the interviewer's question. | The expert says BMC; BMC Helix is the name in the interviewer's question and in the current-employer account. | Attached to the continuing Calloway Biosciences account; this answer does not rename the employer. | Deployment status is from the expert's statement that she still owns BMC Helix, not from this answer.
+E2:F050 [implementation; BMC Helix; deployed; firsthand_report; model; proposed] BMC's account team understood their GxP language without it having to be explained from scratch, which sped up implementation.
+    supports: E2:P084
+    context: E2:P017, E2:P020, E2:P082
+    qualifications: Stated as part of BMC's edge for them specifically, alongside out-of-the-box compliance templates. | The expert says BMC; BMC Helix is the name in the interviewer's question and in the current-employer account. | Attached to the continuing Calloway Biosciences account; this answer does not rename the employer. | Deployment status is from the expert's statement that she still owns BMC Helix, not from this answer.
+E2:F051 [implementation; BMC Helix; deployed; expert_estimate; model; proposed] The BMC Helix rollout took about seven months from kickoff to go-live.
+    supports: E2:P089
+    context: E2:P087, E2:P020
+    quantity: {'raw': 'about seven months', 'value': 7.0, 'approximate': True, 'unit': 'months', 'basis': 'kickoff to go-live', 'carried': []}
+    qualifications: The expert said this was faster than she expected going in. The figure is her approximation. The answer does not name Calloway or BMC Helix.
+E2:F052 [implementation; BMC Helix; deployed; firsthand_report; model; proposed] Asset and ticket history was pulled from the legacy ManageEngine tool, and the team did a lot of manual cleanup and mapping before loading it into the new CMDB.
+    supports: E2:P089
+    context: E2:P087, E2:P020
+    qualifications: The expert ranked data migration as the biggest rollout challenge and judged the ManageEngine export tools as not great, which is why the manual work was needed. Calling ManageEngine legacy during migration into the new CMDB does not explicitly say the tool was decommissioned.
+E2:F053 [implementation; BMC Helix; deployed; firsthand_report; model; proposed] Change management with end users was the second rollout challenge: many site-level staff had used the old portal for years and were resistant to a new interface.
+    supports: E2:P089
+    context: E2:P087, E2:P020
+    qualifications: The expert ranked this behind data migration. The answer does not name the new interface as BMC Helix.
+E2:F054 [implementation; BMC Helix; deployed; firsthand_report; model; proposed] A BMC connector was used for Workday HR data sync and for onboarding and offboarding trigger workflows.
+    supports: E2:P093
+    qualifies: E2:P097
+    context: E2:P091, E2:P095, E2:P020
+    qualifications: The answer names BMC, not BMC Helix. A later answer said overall integration work was a mix and that Workday was mostly BMC's native connector, while SAP was custom REST API work. She did not explicitly confirm or deny BMC integration hub tooling by that name.
+E2:F055 [implementation; BMC Helix; deployed; opinion; model; proposed] The expert judged the Workday integration as fairly smooth and BMC's connector for that HR sync as solid.
+    supports: E2:P093
+    context: E2:P091, E2:P020
+    qualifications: Judgment in the same answer that describes the connector. The answer says BMC, not BMC Helix.
+E2:F056 [implementation; BMC Helix; deployed; opinion; model; proposed] The expert judged SAP integration as harder than the Workday integration she had just described.
+    supports: E2:P093
+    context: E2:P091, E2:P020
+    qualifications: Comparative judgment in the same answer, not a scored rating.
+E2:F057 [implementation; BMC Helix; deployed; firsthand_report; model; proposed] No out-of-the-box connector fit their SAP configuration, so the internal team built a custom API integration to reflect some SAP inventory and equipment data in the CMDB.
+    supports: E2:P093
+    qualifies: E2:P097
+    context: E2:P091, E2:P095, E2:P020
+    qualifications: Scope is some inventory and equipment data, not a full SAP integration. A later answer specifies custom REST API work built by their integration engineer because the SAP instance is fairly customized on the inventory side.
+E2:F058 [implementation; BMC Helix; deployed; expert_estimate; model; proposed] The custom SAP integration took an extra six or seven weeks that had not been originally budgeted.
+    supports: E2:P093
+    context: E2:P091, E2:P020
+    quantity: {'raw': 'an extra six or seven weeks', 'low': 6.0, 'high': 7.0, 'approximate': True, 'unit': 'weeks', 'basis': 'not originally budgeted', 'carried': []}
+    qualifications: This is extra schedule time, not a stated monetary cost. The figure is a range rather than a single value.
+E2:F059 [implementation; BMC Helix; deployed; firsthand_report; model; proposed] End-user resistance mainly appeared as complaints that the portal looked different and that people did not know where to submit certain request types.
+    supports: E2:P101
+    context: E2:P099, E2:P087, E2:P020
+    qualifications: The answer does not name BMC Helix; the new interface is the one from the rollout under discussion.
+E2:F060 [implementation; BMC Helix; deployed; firsthand_report; model; proposed] The team addressed interface resistance with lunch-and-learns at each site and short recorded walkthrough videos.
+    supports: E2:P101
+    context: E2:P099, E2:P087, E2:P020
+    qualifications: Each site indicates more than one site, but no site count is stated.
+E2:F061 [implementation; BMC Helix; deployed; expert_estimate; model; proposed] Ticket volume through the correct channels took about two months after go-live to stabilize.
+    supports: E2:P101
+    context: E2:P099, E2:P087, E2:P020
+    quantity: {'raw': 'about two months', 'value': 2.0, 'approximate': True, 'unit': 'months', 'basis': 'post-go-live until ticket volume through the correct channels stabilized', 'carried': []}
+    qualifications: Approximate duration. No ticket counts are stated.
+E2:F062 [pricing; BMC Helix; deployed; expert_estimate; model; proposed] BMC Helix total cost of ownership came in roughly 15% over the initial budget, mainly because of SAP integration work and additional Digital Workplace licenses that had not been scoped for all site-level staff.
+    supports: E2:P106
+    qualifies: E2:P114
+    context: E2:P017, E2:P020, E2:P104
+    quantity: {'raw': 'roughly 15% over our initial budget', 'value': 15.0, 'approximate': True, 'unit': 'percent', 'basis': 'over initial budget', 'carried': []}
+    qualifications: The expert gives the overrun as a rough figure and attributes it mostly to those two causes, not as a full cost breakdown. | The SAP integration is only referenced as work mentioned earlier; this section does not describe that work. | A later answer describes a full Digital Workplace mobile experience as a separate SKU added mid-implementation for mobile ticket submission. It does not explicitly say that SKU is the same as the additional Digital Workplace licenses cited as a budget driver.
+E2:F063 [pricing; BMC; deployed; expert_estimate; model; proposed] The expert places blended BMC pricing at roughly sixty dollars a user per month across their license tiers.
+    supports: E2:P110
+    context: E2:P017, E2:P020, E2:P108
+    quantity: {'raw': 'roughly sixty dollars a user per month blended across our license tiers', 'value': 60.0, 'approximate': True, 'unit': 'per user', 'period': 'month', 'currency': 'dollars', 'basis': 'blended across license tiers', 'carried': []}
+    qualifications: This is the expert's blended estimate across license tiers, not a single listed tier price. | The expert says BMC here; the identifying passage and the interviewer call the deployed platform BMC Helix.
+E2:F064 [pricing; ServiceNow; evaluated; expert_estimate; model; proposed] ServiceNow's quote came in closer to one-sixty for a comparable module set.
+    supports: E2:P110
+    context: E2:P020, E2:P108
+    quantity: {'raw': 'closer to one-sixty for a comparable module set', 'value': 160.0, 'approximate': True, 'unit': 'per user', 'period': 'month', 'currency': 'dollars', 'basis': 'vendor quote for a comparable module set', 'carried': ['currency', 'unit', 'period']}
+    qualifications: Dollar, per-user, and per-month are taken from the BMC figure in the same answer and are not restated for ServiceNow. | The interviewer asked how pricing compared with alternatives evaluated; the expert reports a quote rather than a price paid. | This section does not explicitly say ServiceNow was rejected. An earlier passage describes a ServiceNow environment the expert previously ran at a CDMO; that prior employer is not the subject of this quote.
+E2:F065 [pricing; Ivanti; evaluated; expert_estimate; model; proposed] Ivanti was around seventy in the same pricing comparison.
+    supports: E2:P110
+    context: E2:P020, E2:P108
+    quantity: {'raw': 'around seventy', 'value': 70.0, 'approximate': True, 'unit': 'per user', 'period': 'month', 'currency': 'dollars', 'carried': ['currency', 'unit', 'period']}
+    qualifications: Dollar, per-user, and per-month are carried from the BMC figure in the same answer. | The interviewer framed these as alternatives evaluated; the expert does not explicitly say Ivanti was rejected or never purchased.
+E2:F066 [pricing; Freshservice; evaluated; expert_estimate; model; proposed] Freshservice was in the thirty to thirty-five dollar range, which the expert contrasted with less compliance depth.
+    supports: E2:P110
+    context: E2:P020, E2:P108
+    quantity: {'raw': 'in the thirty to thirty-five dollar range', 'low': 30.0, 'high': 35.0, 'approximate': False, 'unit': 'per user', 'period': 'month', 'currency': 'dollars', 'basis': 'less compliance depth', 'carried': ['unit', 'period', 'unit', 'period']}
+    qualifications: Per-user and per-month are carried from the BMC figure in the same answer; the dollar unit is stated for this range. | The expert says 'again' about less compliance depth, pointing to an earlier comparison not restated here. | The interviewer framed these as alternatives evaluated; the expert does not explicitly say Freshservice was rejected or never purchased.
+E2:F067 [pricing; BMC Helix; deployed; firsthand_report; model; proposed] The AIOps and predictive analytics add-on was not included in the base package, and the full Digital Workplace mobile experience was a separate SKU added mid-implementation once site staff needed mobile ticket submission.
+    supports: E2:P114
+    qualifies: E2:P106
+    context: E2:P017, E2:P020, E2:P112
+    qualifications: The expert confirms licensing surprises rather than merely agreeing: both items were add-ons, and the mobile experience was added during implementation. | The answer does not name BMC or Calloway. | This may relate to the additional Digital Workplace licenses cited as a budget driver, but the passages describe them differently and do not explicitly equate them.
+E2:F068 [pricing; BMC Helix; deployed; firsthand_report; model; proposed] After two renewal cycles, increases have been in the four to six percent range each year.
+    supports: E2:P118
+    context: E2:P017, E2:P020, E2:P116
+    quantity: {'raw': 'in the four to six percent range each year', 'low': 4.0, 'high': 6.0, 'approximate': False, 'unit': 'percent', 'period': 'year', 'carried': []}
+    qualifications: The expert also described those increases as manageable, which is a judgment rather than a separate measured figure. | The answer does not name BMC or Calloway; the renewal question follows the BMC Helix cost discussion. | Two renewal cycles and an each-year range are both stated and are not equated.
+E2:F069 [rating; BMC Helix; deployed; opinion; model; proposed] On the interviewer's 1-to-10 scale, the expert puts the likelihood of continuing to use BMC Helix over the next three years at 8.
+    supports: E2:P123
+    context: E2:P020, E2:P121
+    quantity: {'raw': "I'd say an 8", 'value': 8.0, 'approximate': True, 'carried': []}
+    qualifications: The 1-to-10 scale and the three-year horizon are set by the interviewer; the expert answers only with the score. 'I'd say' is mild hedging.
+E2:F070 [rating; BMC Helix; deployed; opinion; model; proposed] On the interviewer's 0-to-10 scale, the expert would probably rate likelihood of recommending BMC Helix to a peer at a similarly sized regulated company as a 7, and would recommend it with caveats about the partner ecosystem being smaller.
+    supports: E2:P127
+    context: E2:P020, E2:P125
+    quantity: {'raw': 'Probably a 7', 'value': 7.0, 'approximate': True, 'carried': []}
+    qualifications: The 0-to-10 scale and the peer-at-a-similarly-sized-regulated-company framing come from the interviewer, and this is a different scale from the 1-to-10 continue-using question. The smaller-partner-ecosystem caveat is part of the same answer and qualifies the recommendation.
+E2:F071 [pricing; BMC Helix; deployed; opinion; model; proposed] The expert names cost relative to capability as one of BMC Helix's biggest strengths.
+    supports: E2:P131
+    context: E2:P020, E2:P129
+    qualifications: No price figure is given; this is a qualitative judgment offered as a strength.
+E2:F072 [rating; BMC Helix; deployed; opinion; model; proposed] The expert considers strong compliance and change-control workflows out of the box for regulated industries one of BMC Helix's biggest strengths.
+    supports: E2:P131
+    context: E2:P020, E2:P129
+E2:F073 [rating; BMC Helix; deployed; opinion; model; proposed] The expert considers a support team that understands pharma and med device use cases one of BMC Helix's biggest strengths.
+    supports: E2:P131
+    context: E2:P020, E2:P129
+E2:F074 [rating; BMC Helix; deployed; opinion; model; proposed] The expert names a smaller partner and integrator ecosystem as one of BMC Helix's biggest weaknesses, and says specialized integrations can take longer to source help for.
+    supports: E2:P135
+    qualifies: E2:P143
+    context: E2:P020, E2:P129, E2:P133
+    qualifications: The SAP integration example offered afterward was not attributed solely to ecosystem size: the expert said the cause was both a platform limitation and an implementation-partner issue, and that the SAP configuration is unusual enough that a larger partner ecosystem might still not have had an off-the-shelf answer.
+E2:F075 [rating; BMC Helix; deployed; opinion; model; proposed] The expert judges BMC Helix's AIOps and analytics story to be behind ServiceNow's, and names that gap as one of BMC Helix's biggest weaknesses.
+    supports: E2:P135
+    context: E2:P020, E2:P129, E2:P133
+    qualifications: Comparative judgment only. This section does not say Calloway runs ServiceNow.
+E2:F076 [pricing; BMC Helix; deployed; firsthand_report; model; proposed] The expert says the mobile experience needed an extra licensing tier.
+    supports: E2:P135
+    context: E2:P020, E2:P129, E2:P133
+    qualifications: Cited as one of BMC Helix's biggest weaknesses. The expert felt that tier should have been more clearly bundled from the start. The passage refers to an extra licensing tier discussed earlier; this section does not name the tier or give a price, and it does not say the tier was purchased.
+E2:F077 [implementation; BMC Helix; deployed; firsthand_report; model; proposed] As the example of a BMC Helix weakness causing business impact, the expert reports that a SAP integration delay pushed go-live back almost two months from the original plan, and that during that gap they ran dual systems, which created confusion about where certain tickets should be logged.
+    supports: E2:P139
+    qualifies: E2:P143
+    context: E2:P020, E2:P129, E2:P137
+    quantity: {'raw': 'almost two months', 'value': 2.0, 'approximate': True, 'unit': 'months', 'period': 'month', 'basis': 'from the original plan', 'carried': []}
+    qualifications: The expert refers to a SAP integration delay mentioned earlier; the earlier description is not in this section. This was during implementation before go-live, while dual systems were running. The expert later said the cause was both a platform limitation and an implementation-partner issue, and that BMC could have flagged the risk earlier in the sales process.
+E2:F078 [implementation; BMC Helix; deployed; opinion; model; proposed] The expert judges the SAP integration problem to have been both a platform limitation and an implementation-partner issue, and thinks BMC should have flagged that risk earlier in the sales process instead of the team discovering it mid-implementation.
+    supports: E2:P143
+    context: E2:P020, E2:P141, E2:P139
+    qualifications: The passage says BMC rather than BMC Helix. The expert also says the SAP configuration is unusual enough that even a bigger partner ecosystem might not have had an off-the-shelf answer, so the missing off-the-shelf option is a counterfactual judgment rather than something observed.
+E2:F079 [rating; BMC Helix; hypothetical; hypothetical; model; proposed] If leadership decided Calloway should migrate away from BMC Helix, the expert would rate the difficulty at about 6 on a 1-to-10 scale.
+    supports: E2:P148
+    context: E2:P146
+    quantity: {'raw': 'around a 6', 'value': 6.0, 'approximate': True, 'basis': '1 to 10 scale', 'carried': []}
+    qualifications: The expert said it is not as entrenched as an ERP, but that a fair amount of custom CMDB structure and compliance workflow logic would need to be rebuilt or migrated.
+E2:F080 [implementation; BMC Helix; deployed; firsthand_report; model; proposed] Calloway has built a fair amount of custom CMDB structure and compliance workflow logic on BMC Helix.
+    supports: E2:P148
+    context: E2:P146
+    qualifications: The supporting sentence does not name the vendor or company. Fair amount is the expert's characterization, not a measured quantity. The same answer says that work would need to be rebuilt or migrated in a hypothetical move off the platform, and that the platform is not as entrenched as an ERP.
+E2:F081 [pricing; BMC Helix; deployed; expert_estimate; model; proposed] Calloway has seen BMC Helix price increases of four to six percent.
+    supports: E2:P152
+    context: E2:P146, E2:P150
+    quantity: {'raw': 'four to six percent', 'low': 4.0, 'high': 6.0, 'approximate': True, 'unit': 'percent', 'basis': 'price increase', 'carried': []}
+    qualifications: The supporting answer does not name BMC Helix or Calloway; it refers to price increases already seen while discussing what would trigger a switch from the current platform. The period for those increases is not stated.
+E2:F082 [selection_criteria; BMC Helix; hypothetical; hypothetical; model; proposed] A sustained BMC Helix price increase well beyond increases already seen, illustrated as 25 percent or more in a single renewal, would make the expert seriously evaluate switching.
+    supports: E2:P152
+    context: E2:P146, E2:P150
+    quantity: {'raw': '25% or more in a single renewal', 'low': 25.0, 'approximate': True, 'unit': 'percent', 'period': 'renewal', 'carried': []}
+    qualifications: Presented as an illustrative threshold, introduced with say, and as one trigger rather than a vendor quote or an amount paid. The supporting answer does not name the vendor.
+E2:F083 [selection_criteria; BMC Helix; hypothetical; hypothetical; model; proposed] A serious compliance failure, such as an audit finding that the platform itself could not support a required control, would make the expert seriously evaluate switching from BMC Helix.
+    supports: E2:P152
+    context: E2:P146, E2:P150
+    qualifications: Stated as an alternative trigger alongside a large price increase, not as a failure that has occurred. The supporting answer says the platform and does not repeat the vendor name.
+E2:F084 [vendor_relationship; ServiceNow; hypothetical; hypothetical; model; proposed] If Calloway switched away from BMC Helix, the expert would evaluate ServiceNow first.
+    supports: E2:P156
+    context: E2:P146, E2:P154
+    qualifications: Described as probable at this point, not as a selection already performed or a purchase, and only assuming budget allowed ServiceNow.
+E2:F085 [selection_criteria; ServiceNow; hypothetical; hypothetical; model; proposed] The expert would look at ServiceNow first because, if Calloway is going to absorb switching costs anyway, she would want the platform with the broadest long-term ecosystem and AI roadmap.
+    supports: E2:P156
+    context: E2:P146, E2:P154
+    qualifications: Conditional on budget allowing it. Ecosystem and AI roadmap are stated together as the reason to evaluate ServiceNow first, not as a ranked list or as the decisive reason in a completed purchase. No switching-cost figure is given.
+E3:F001 [company_scale; custom or unnamed system; relationship not stated; firsthand_report; model; proposed] Solara Renewables is a mid-market solar and wind project developer, with staff split between corporate offices and field sites.
+    supports: E3:P017
+    context: E3:P002
+    qualifications: Headcount is stated separately and only approximately.
+E3:F002 [company_scale; custom or unnamed system; relationship not stated; expert_estimate; model; proposed] Solara Renewables has a few hundred employees.
+    supports: E3:P017
+    context: E3:P002
+    quantity: {'raw': 'a few hundred employees', 'approximate': True, 'carried': []}
+    qualifications: The expert gives an approximate headcount, not an exact figure, and does not split the count between corporate offices and field sites.
+E3:F003 [implementation; custom or unnamed system; relationship not stated; firsthand_report; model; proposed] When the expert arrived at Solara Renewables, there was no formal ITSM platform, and a lot of the work ran through shared inboxes.
+    supports: E3:P017
+    context: E3:P002
+    qualifications: This is the state on arrival, before Freshservice was introduced. Shared inboxes are not named as a vendor product.
+E3:F004 [vendor_relationship; Freshservice; deployed; firsthand_report; model; proposed] Solara Renewables uses Freshservice, which the expert brought in, and the expert still owns that vendor relationship.
+    supports: E3:P017
+    context: E3:P002
+    qualifications: The passage does not describe modules, sites, or user scope, and does not say whether any other ITSM tool is also in use.
+E3:F005 [implementation; Freshservice; relationship not stated; firsthand_report; model; proposed] The expert led the effort to bring Freshservice into Solara Renewables about three and a half years before the interview.
+    supports: E3:P017
+    context: E3:P002
+    quantity: {'raw': 'about three and a half years ago', 'value': 3.5, 'approximate': True, 'unit': 'years', 'carried': []}
+    qualifications: The timing is the expert's approximation, not a calendar date. The passage does not describe implementation scope, partners, or go-live steps.
+E3:F006 [vendor_relationship; Ivanti Service Manager; deployed; firsthand_report; model; proposed] The expert's previous employer ran Ivanti Service Manager, formerly Ivanti Heat, on-premises while the expert was IT manager there.
+    supports: E3:P017
+    qualifications: The employer is unnamed and described only as a larger industrial services company. Past tense reflects the expert having left; the passage does not say the company stopped using or replaced Ivanti Service Manager. The product is named Ivanti Service Manager and formerly Ivanti Heat.
+E3:F007 [vendor_relationship; Freshservice; deployed; firsthand_report; model; proposed] Solara currently uses Freshservice for Incident, Service Request, Change, Problem, and Asset Management, and recently turned on the Project module for some larger infrastructure rollouts.
+    supports: E3:P022
+    context: E3:P020
+    qualifications: Project module use is described as recent and for some larger infrastructure rollouts, not as general use across all work.
+E3:F008 [implementation; Freshservice; relationship not stated; firsthand_report; model; proposed] Solara's Freshservice deployment is fully cloud, and the expert says Freshservice does not really offer on-premises.
+    supports: E3:P022
+    context: E3:P020
+    qualifications: The on-premises point is the expert's hedged characterization that Freshservice does not really do on-premises, not a detailed product specification.
+E3:F009 [company_scale; custom or unnamed system; relationship not stated; expert_estimate; model; proposed] Solara handles somewhere around 18,000 tickets a year.
+    supports: E3:P022
+    context: E3:P020
+    quantity: {'raw': 'somewhere around 18,000 tickets a year', 'value': 18000.0, 'approximate': True, 'period': 'year', 'basis': 'tickets handled', 'carried': []}
+    qualifications: The figure is approximate. The same sentence places that volume across about 450 employees plus a rotating pool of field contractors.
+E3:F010 [company_scale; custom or unnamed system; relationship not stated; expert_estimate; model; proposed] Solara has about 450 employees.
+    supports: E3:P022
+    context: E3:P020
+    quantity: {'raw': 'about 450 employees', 'value': 450.0, 'approximate': True, 'basis': 'employees', 'carried': []}
+    qualifications: The count is approximate and is for employees. A rotating pool of field contractors is mentioned separately, with no count given.
+E3:F011 [implementation; Freshservice; relationship not stated; firsthand_report; model; proposed] A rotating pool of field contractors submits requests through email-to-ticket.
+    supports: E3:P022
+    context: E3:P020
+    qualifications: No size is given for the contractor pool. The channel is described in the account of current ticket handling, and the passage does not repeat the Freshservice name in that clause.
+E3:F012 [selection_criteria; custom or unnamed system; relationship not stated; firsthand_report; model; proposed] Solara moved to formalize an ITSM platform because nothing was tracked and nothing had an SLA, a state the expert describes as chaos.
+    supports: E3:P026
+    context: E3:P020, E3:P024
+    qualifications: This is one stated driver of formalizing a platform versus shared inboxes, not a ranked criterion against named vendor alternatives.
+E3:F013 [selection_criteria; custom or unnamed system; relationship not stated; attributed_explanation; model; proposed] As project development scaled, leadership wanted metrics such as resolution speed and how many devices were deployed in the field.
+    supports: E3:P026
+    context: E3:P020, E3:P024
+    qualifications: The expert attributes the demand to leadership and gives those measures as examples of that kind of thing, so the list is not presented as exhaustive.
+E3:F014 [selection_criteria; custom or unnamed system; relationship not stated; firsthand_report; model; proposed] Starting SOC 2 work for some financing partners exposed a gap because there was no audit trail on IT changes, which contributed to formalizing an ITSM platform.
+    supports: E3:P026
+    qualifies: E3:P030
+    context: E3:P020, E3:P024
+    qualifications: SOC 2 work is described as for some financing partners. A later answer says the effort was mostly IT and security-driven at first and became more strategic once the SOC 2 requirement came from the CFO's office, which got leadership attention quickly.
+E3:F015 [selection_criteria; custom or unnamed system; relationship not stated; firsthand_report; model; proposed] Formalizing the ITSM platform was mostly IT and security-driven at first, then became more strategic and drew leadership attention quickly once a SOC 2 requirement came from the CFO's office.
+    supports: E3:P030
+    qualifies: E3:P026
+    context: E3:P020, E3:P028
+    qualifications: Mostly IT and security-driven is the expert's characterization of the early phase. He attributes the SOC 2 requirement to the CFO's office and the resulting attention to leadership. The prior answer also cites lack of tracking, lack of SLAs, a leadership demand for metrics, and the audit-trail gap, so this is a shift in weight and sponsorship rather than the only stated driver.
+E3:F016 [vendor_relationship; ServiceNow; evaluated; firsthand_report; model; proposed] In its ITSM selection, Solara Renewables looked at ServiceNow and ruled it out rather than buying it.
+    supports: E3:P035
+    context: E3:P017, E3:P020, E3:P033
+    qualifications: The rejection was quick and based on cost, not a long evaluation.
+E3:F017 [vendor_relationship; Ivanti; evaluated; firsthand_report; model; proposed] Solara Renewables included Ivanti in the ITSM selection because the expert already had experience with it, and did not select it.
+    supports: E3:P035
+    qualifies: E3:P047
+    context: E3:P017, E3:P020, E3:P033
+    qualifications: The prior experience was from the expert's last job, not from a Solara deployment. A later answer says that memory was poor and that the decision went to Freshservice over Ivanti.
+E3:F018 [vendor_relationship; Zendesk; evaluated; firsthand_report; model; proposed] Solara Renewables looked at Zendesk in the ITSM selection and did not select it.
+    supports: E3:P035
+    qualifies: E3:P047
+    context: E3:P017, E3:P020, E3:P033
+    qualifications: The later comparison treats Zendesk as a finalist that lost to Freshservice, not as a product Solara bought.
+E3:F019 [vendor_relationship; Freshservice; deployed; firsthand_report; model; proposed] Solara Renewables included Freshservice in the same ITSM selection and the decision went to Freshservice.
+    supports: E3:P035, E3:P047
+    context: E3:P017, E3:P020, E3:P033, E3:P045
+    qualifications: These answers describe the selection outcome. Continued use is not restated here; the expert earlier said he brought Freshservice in and still owns that relationship, and nothing says Solara stopped using it.
+E3:F020 [selection_criteria; ServiceNow; relationship not stated; firsthand_report; model; proposed] Solara Renewables ruled ServiceNow out quickly on cost, judging it to be far more platform than the company needed at its size.
+    supports: E3:P035
+    context: E3:P017, E3:P020, E3:P033
+    qualifications: The excess-platform point is the expert's judgment. This answer gives no price and no size figure.
+E3:F021 [selection_criteria; custom or unnamed system; relationship not stated; firsthand_report; model; proposed] Purchasing criteria were led by cost because of company size, then implementation speed, ease of use for a non-technical field workforce, asset management for hardware tracked across remote sites, and integration with existing tools, mainly Azure AD and Intune.
+    supports: E3:P039
+    qualifies: E3:P043
+    context: E3:P017, E3:P020, E3:P037
+    qualifications: When asked for a strict priority order, the expert placed ease of use second and implementation speed third, reversing this earlier order, and shortened the later items to asset management depth and integration with Azure AD and Intune.
+E3:F022 [selection_criteria; custom or unnamed system; relationship not stated; firsthand_report; model; proposed] In strict priority order, the top five purchasing criteria were cost, ease of use, implementation speed, asset management depth, and integration with Azure AD and Intune.
+    supports: E3:P043
+    qualifies: E3:P039
+    context: E3:P017, E3:P020, E3:P041
+    qualifications: An earlier answer ordered speed of implementation ahead of ease of use. It also tied first place to company size, described ease of use as for a non-technical field workforce, described asset management as the ability to track a lot of hardware across remote sites, and described integration as with existing tools, mainly Azure AD and Intune.
+E3:F023 [vendor_relationship; custom or unnamed system; deployed; firsthand_report; model; proposed] Solara Renewables already used Azure AD and Intune, and those were the main existing tools the ITSM purchase needed to integrate with.
+    supports: E3:P039
+    qualifies: E3:P043
+    context: E3:P017, E3:P020, E3:P037
+    qualifications: The strict ranking repeats Azure AD and Intune as the fifth criterion but does not again call them existing tools. No Microsoft corporate name is given.
+E3:F024 [selection_criteria; Freshservice; relationship not stated; firsthand_report; model; proposed] What tipped the decision to Freshservice was a modern interface, built-in asset management with a discovery agent, and a price point that made sense for the company.
+    supports: E3:P047
+    context: E3:P017, E3:P020, E3:P045
+    qualifications: No price amount is stated. The expert frames the fit as a sweet spot. The comparison in the question is against Zendesk and Ivanti; ServiceNow had already been ruled out on cost.
+E3:F025 [selection_criteria; Zendesk; relationship not stated; opinion; model; proposed] Zendesk was judged a weaker fit because it seemed built more for customer support than for internal IT, and its asset management was weak.
+    supports: E3:P047
+    context: E3:P017, E3:P020, E3:P045
+E3:F026 [selection_criteria; Ivanti; relationship not stated; firsthand_report; model; proposed] Ivanti lost the final comparison with Freshservice because of the expert's poor memory of Ivanti from his previous job.
+    supports: E3:P047
+    context: E3:P017, E3:P020, E3:P045
+    qualifications: He does not describe any Ivanti deployment at Solara. The poor memory is his judgment that administration was clunky and configuration was slow. Last job is the earlier unnamed larger industrial services company, not Solara.
+E3:F027 [implementation; Ivanti; deployed; opinion; model; proposed] At his previous employer, the expert remembers Ivanti as having clunky administration and being slow to configure.
+    supports: E3:P047
+    context: E3:P017
+    qualifications: This passage says only Ivanti and 'my last job.' The employer is identified earlier only as a larger industrial services company that ran Ivanti Service Manager, formerly Ivanti Heat. The expert's later departure is not described as the company stopping use.
+E3:F028 [rating; Freshservice; deployed; opinion; model; proposed] Gives Freshservice a 9 on the 1-to-10 ease-of-use scale.
+    supports: E3:P052
+    context: E3:P050, E3:P020, E3:P017
+    quantity: {'raw': 'a 9', 'value': 9.0, 'approximate': False, 'basis': '1 to 10 ease of use', 'carried': []}
+    qualifications: The 1-to-10 scale is in the interviewer's question, not restated by the expert. Deployment is not restated in this sentence.
+E3:F029 [rating; Zendesk; relationship not stated; opinion; model; proposed] Gives Zendesk an 8 on ease of use and describes it as also strong on that dimension.
+    supports: E3:P052
+    context: E3:P050, E3:P020
+    quantity: {'raw': 'an 8', 'value': 8.0, 'approximate': False, 'basis': '1 to 10 ease of use', 'carried': []}
+    qualifications: This answer does not say Solara deployed Zendesk. The 1-to-10 scale comes from the interviewer's question.
+E3:F030 [rating; ServiceNow; relationship not stated; opinion; model; proposed] Gives ServiceNow a 6 on ease of use, describing it as powerful but requiring a lot of configuration.
+    supports: E3:P052
+    context: E3:P050, E3:P020
+    quantity: {'raw': 'a 6', 'value': 6.0, 'approximate': False, 'basis': '1 to 10 ease of use', 'carried': []}
+    qualifications: This answer does not say Solara deployed or selected ServiceNow. The configuration comment is the stated reason for the mid-range score, not a report of a Solara implementation.
+E3:F031 [rating; Ivanti; deployed; opinion; model; proposed] Gives Ivanti about a 5 on ease of use, explicitly from prior experience.
+    supports: E3:P052
+    context: E3:P050, E3:P017, E3:P047
+    quantity: {'raw': 'maybe a 5', 'value': 5.0, 'approximate': True, 'basis': '1 to 10 ease of use', 'carried': []}
+    qualifications: He says maybe, so the score is approximate. He attributes it to prior experience, not Solara. The prior employer is unnamed. The source does not say that employer stopped using or replaced Ivanti.
+E3:F032 [rating; Freshservice; deployed; opinion; model; proposed] Gives Freshservice a 9 on cost.
+    supports: E3:P056
+    context: E3:P054, E3:P050, E3:P020, E3:P017
+    quantity: {'raw': 'a 9', 'value': 9.0, 'approximate': False, 'basis': 'cost rating', 'carried': []}
+    qualifications: No dollar amount is given. The 1-to-10 scale was set for ease of use and was not repeated for cost. The phrase about company size is stated with the ServiceNow score, not with this score.
+E3:F033 [rating; Zendesk; relationship not stated; opinion; model; proposed] Gives Zendesk an 8 on cost.
+    supports: E3:P056
+    context: E3:P054, E3:P050, E3:P020
+    quantity: {'raw': 'an 8', 'value': 8.0, 'approximate': False, 'basis': 'cost rating', 'carried': []}
+    qualifications: No dollar amount is given. This answer does not say Solara deployed Zendesk. The 1-to-10 scale was not restated for cost.
+E3:F034 [rating; Ivanti; relationship not stated; opinion; model; proposed] Gives Ivanti a 7 on cost in the same comparison.
+    supports: E3:P056
+    context: E3:P054, E3:P050, E3:P020
+    quantity: {'raw': 'a 7', 'value': 7.0, 'approximate': False, 'basis': 'cost rating', 'carried': []}
+    qualifications: Unlike the ease-of-use score, this cost score is not explicitly tied to the prior employer. It is given in the continuing current-employer comparison. No dollar amount is given, and the company-size phrase is attached in the sentence to the ServiceNow score.
+E3:F035 [rating; ServiceNow; relationship not stated; opinion; model; proposed] Gives ServiceNow a 4 on cost for a company of their size.
+    supports: E3:P056
+    context: E3:P054, E3:P050, E3:P020
+    quantity: {'raw': 'a 4', 'value': 4.0, 'approximate': False, 'basis': 'cost rating for a company our size', 'carried': []}
+    qualifications: No dollar amount or headcount is given in this answer. This answer does not say Solara deployed or selected ServiceNow. The size qualifier is stated with this score.
+E3:F036 [rating; ServiceNow; relationship not stated; opinion; model; proposed] Gives ServiceNow a 9 on asset-management depth, calling it probably the strongest in stated capability but more than they need.
+    supports: E3:P060
+    context: E3:P058, E3:P050, E3:P020
+    quantity: {'raw': 'a 9', 'value': 9.0, 'approximate': False, 'basis': 'asset management depth rating', 'carried': []}
+    qualifications: Probably qualifies the claim that it is the strongest in stated capability, not the numeric score itself. He frames it as on paper and overkill for them, not as a platform they run. The 1-to-10 scale was not restated for this dimension.
+E3:F037 [rating; Freshservice; deployed; opinion; model; proposed] Gives Freshservice a 7 on asset-management depth, describing its discovery agent as solid and good enough for their needs.
+    supports: E3:P060
+    context: E3:P058, E3:P050, E3:P020, E3:P017
+    quantity: {'raw': 'a 7', 'value': 7.0, 'approximate': False, 'basis': 'asset management depth rating', 'carried': []}
+    qualifications: The discovery-agent comment is his judgment of adequacy for current needs, not a separate measured result. The 1-to-10 scale was not restated for this dimension.
+E3:F038 [rating; Ivanti; relationship not stated; opinion; model; proposed] Gives Ivanti's asset capability about a 7 and describes that asset piece as having been actually decent.
+    supports: E3:P060
+    context: E3:P058, E3:P017, E3:P047, E3:P052, E3:P020
+    quantity: {'raw': 'maybe a 7', 'value': 7.0, 'approximate': True, 'basis': 'asset management depth rating', 'carried': []}
+    qualifications: The sentence does not name an employer. Past tense contrasts with his present-tense ratings for current needs, and other answers tie Ivanti to prior experience at an unnamed previous employer, but this sentence does not say that. It is not attributed to Solara because the passage does not say the current employer runs Ivanti asset management.
+E3:F039 [rating; Zendesk; relationship not stated; opinion; model; proposed] Gives Zendesk a 3 on asset-management depth and describes it as weak there.
+    supports: E3:P060
+    context: E3:P058, E3:P050, E3:P020
+    quantity: {'raw': 'a 3', 'value': 3.0, 'approximate': False, 'basis': 'asset management depth rating', 'carried': []}
+    qualifications: This answer does not say Solara deployed Zendesk. The 1-to-10 scale was not restated for this dimension.
+E3:F040 [rating; Freshservice; deployed; opinion; model; proposed] Gives Freshservice an 8 on integration capability with tools such as Azure AD and Intune.
+    supports: E3:P064
+    context: E3:P062, E3:P050, E3:P020, E3:P017
+    quantity: {'raw': 'an 8', 'value': 8.0, 'approximate': False, 'basis': 'integration capability rating', 'carried': []}
+    qualifications: The same sentence says the Azure AD sync was fairly easy. The question also named Intune, which he does not address. The 1-to-10 scale was not restated for this dimension.
+E3:F041 [implementation; Freshservice; deployed; firsthand_report; model; proposed] Says the Freshservice Azure AD sync was fairly easy.
+    supports: E3:P064
+    context: E3:P062, E3:P020, E3:P017
+    qualifications: The question also asked about Intune; he does not describe an Intune integration. The numeric integration score is a separate judgment in the same sentence.
+E3:F042 [rating; ServiceNow; relationship not stated; opinion; model; proposed] Gives ServiceNow about a 9 on raw integration capability.
+    supports: E3:P064
+    context: E3:P062, E3:P050, E3:P020
+    quantity: {'raw': 'probably a 9', 'value': 9.0, 'approximate': True, 'basis': 'raw integration capability rating', 'carried': []}
+    qualifications: He says probably, and he frames the score as raw capability rather than a Solara deployment. The question named Azure AD and Intune; he does not describe a ServiceNow integration they ran.
+E3:F043 [rating; Ivanti; deployed; opinion; model; proposed] Gives Ivanti a 6 on integration capability from his own experience.
+    supports: E3:P064
+    context: E3:P062, E3:P017, E3:P047
+    quantity: {'raw': 'a 6', 'value': 6.0, 'approximate': False, 'basis': 'integration capability rating', 'carried': []}
+    qualifications: The same sentence says integration involved a lot of manual configuration. The answer does not name the employer; attribution is to the unnamed previous employer where he says they ran Ivanti. The source does not say that employer stopped using Ivanti.
+E3:F044 [implementation; Ivanti; deployed; firsthand_report; model; proposed] Says Ivanti integration involved a lot of manual configuration in his experience.
+    supports: E3:P064
+    context: E3:P062, E3:P017, E3:P047
+    qualifications: Past tense and 'in my experience' are tied to the previous employer via the interview's only stated Ivanti deployment, not to Solara. The source does not say that employer replaced or stopped using Ivanti. The employer is unnamed.
+E3:F045 [rating; Zendesk; relationship not stated; opinion; model; proposed] Gives Zendesk about a 5 on integration capability.
+    supports: E3:P064
+    context: E3:P062, E3:P050, E3:P020
+    quantity: {'raw': 'maybe a 5', 'value': 5.0, 'approximate': True, 'basis': 'integration capability rating', 'carried': []}
+    qualifications: He says maybe. This answer does not say Solara deployed Zendesk or ran an Azure AD or Intune integration on it.
+E3:F046 [rating; Freshservice; deployed; opinion; model; proposed] Says the smallest gap versus Freshservice's closest competitor is probably with Zendesk, on ease of use and general user experience.
+    supports: E3:P068
+    context: E3:P066, E3:P020, E3:P017
+    qualifications: He says probably. No numeric gap is given. This answer does not say Solara deployed Zendesk.
+E3:F047 [rating; Freshservice; deployed; opinion; model; proposed] Says Freshservice pulls ahead of Zendesk on asset management and IT-specific workflows, including ITIL processes Zendesk is not built around.
+    supports: E3:P068
+    context: E3:P066, E3:P020, E3:P017
+    qualifications: Comparative judgment, not a statement that Solara deployed Zendesk. No numeric gap is given.
+E3:F048 [implementation; Freshservice; deployed; firsthand_report; model; proposed] Says they are starting to feel automation limits after adding more complex approval chains in the Project module, and that the automation builder becomes cumbersome when many conditional steps are chained, though he does not describe a hard stop.
+    supports: E3:P072
+    context: E3:P070, E3:P020, E3:P017
+    qualifications: He first agrees an interviewer summary is fair, that automation depth at scale is Freshservice's biggest vulnerability and that limits appear as ticket volume or workflow complexity grows. His own example is approval-chain complexity, not ticket volume, and he says it is not a hard wall. The answer does not name Freshservice; the question does.
+E3:F049 [vendor_relationship; Freshservice; deployed; firsthand_report; model; proposed] Freshservice is the platform they took live and are still using, including the Project module for approval chains.
+    supports: E3:P072, E3:P076
+    context: E3:P070, E3:P074, E3:P020, E3:P017
+    qualifications: Neither answer names Freshservice; the preceding questions do. Current Project-module use is in the earlier answer, and go-live is in the later answer. Duration and cost comparisons are separate claims.
+E3:F050 [pricing; Freshservice; deployed; opinion; model; proposed] Identifies cost as the decisive remaining advantage of Freshservice over ServiceNow.
+    supports: E3:P076
+    context: E3:P074, E3:P020, E3:P017
+    qualifications: No price amount is stated. Cost is marked as the clear primary edge and is stated together with time to value, which is a separate claim. ServiceNow is not described as deployed. The answer does not name Freshservice; the question does.
+E3:F051 [implementation; Freshservice; deployed; opinion; model; proposed] Also identifies time to value as a remaining advantage of Freshservice over ServiceNow.
+    supports: E3:P076
+    context: E3:P074, E3:P020, E3:P017
+    qualifications: Stated together with cost, which he marks as the clearer edge. The about-ten-weeks go-live figure is a separate claim in the same answer. The answer does not name Freshservice; the question does.
+E3:F052 [implementation; Freshservice; deployed; expert_estimate; model; proposed] Says they were live in about ten weeks.
+    supports: E3:P076
+    context: E3:P074, E3:P020, E3:P017
+    quantity: {'raw': 'about ten weeks', 'value': 10.0, 'approximate': True, 'unit': 'weeks', 'basis': 'time to go live', 'carried': []}
+    qualifications: Approximate. Offered as support for a time-to-value advantage versus ServiceNow. The answer does not name Freshservice; the question does.
+E3:F053 [implementation; ServiceNow; relationship not stated; hypothetical; model; proposed] Does not think they would have been live on ServiceNow in under six months.
+    supports: E3:P076
+    context: E3:P074, E3:P020
+    quantity: {'raw': 'under six months', 'high': 6.0, 'approximate': False, 'unit': 'months', 'basis': 'hypothetical time to go live', 'carried': []}
+    qualifications: Counterfactual about the original implementation, not a stated plan to move to ServiceNow and not evidence that ServiceNow was selected or deployed. The quantity is the threshold he does not believe they would have beaten, not an actual duration. No evidence here that ServiceNow was formally evaluated.
+E3:F054 [pricing; ServiceNow; relationship not stated; hypothetical; model; proposed] Says ServiceNow would have cost multiples of what they paid.
+    supports: E3:P076
+    context: E3:P074, E3:P020, E3:P017
+    qualifications: No numeric multiple, currency, or amount paid is stated. Kept separate from the unstated amount actually paid and from the judgment that cost is the decisive edge. Counterfactual, not a quote or invoice. What they paid refers to the Freshservice decision in the question, which this answer does not name.
+E3:F055 [implementation; Freshservice; deployed; expert_estimate; model; proposed] Solara Renewables reached Freshservice go-live about ten weeks after contract.
+    supports: E3:P081
+    context: E3:P020, E3:P079, E3:P074, E3:P076
+    quantity: {'raw': 'about ten weeks', 'value': 10.0, 'approximate': True, 'unit': 'weeks', 'basis': 'from contract to go-live', 'carried': []}
+    qualifications: The expert is restating an earlier approximate go-live figure and here frames the span as contract to go-live.
+E3:F056 [implementation; Freshservice; deployed; opinion; model; proposed] The expert judged that the biggest Freshservice rollout challenge was getting field staff to adopt tickets, not the platform itself.
+    supports: E3:P081
+    context: E3:P020, E3:P079
+E3:F057 [implementation; Freshservice; deployed; firsthand_report; model; proposed] Field staff kept texting or calling the expert directly instead of using tickets, so Solara Renewables ran a change-management push and incentivized adoption.
+    supports: E3:P081
+    context: E3:P020, E3:P079
+    qualifications: The expert does not describe what the adoption incentives were.
+E3:F058 [implementation; Freshservice; deployed; firsthand_report; model; proposed] Freshservice user provisioning through Azure AD sync was a straightforward native integration.
+    supports: E3:P085
+    qualifies: E3:P089
+    context: E3:P020, E3:P083
+    qualifications: A later answer places Azure AD among marketplace apps used for core integrations.
+E3:F059 [implementation; Freshservice; deployed; expert_estimate; model; proposed] Configuring Freshservice Azure AD sync for user provisioning took maybe a day.
+    supports: E3:P085
+    context: E3:P020, E3:P083
+    quantity: {'raw': 'maybe a day', 'value': 1.0, 'approximate': True, 'basis': 'to configure', 'carried': []}
+E3:F060 [implementation; Freshservice; deployed; firsthand_report; model; proposed] Getting Intune device data into the Freshservice asset CMDB took a bit more work than Azure AD sync: Solara Renewables used the native integration plus manual scripting so certain custom fields mapped correctly.
+    supports: E3:P085
+    qualifies: E3:P089
+    context: E3:P020, E3:P083
+    qualifications: A later answer limits that custom scripting to the extra Intune fields and says core integrations were marketplace apps.
+E3:F061 [implementation; Freshservice; deployed; firsthand_report; model; proposed] Core Freshservice integrations were mostly marketplace apps, including Azure AD, Slack for notifications, and a couple of monitoring-tool integrations, while custom scripting was limited to the extra Intune fields.
+    supports: E3:P089
+    context: E3:P020, E3:P087, E3:P085
+    qualifications: The monitoring tools are not named. The extra Intune fields are the custom-field mapping described in the prior answer.
+148 findings in results/runs/1.5.0/findings.sqlite

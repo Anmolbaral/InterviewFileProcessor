@@ -1,144 +1,73 @@
-# Analytics Dashboard: evidence workspace for three ITSM interviews
+# ITSM interview evidence workspace
 
-A client-facing workspace over three expert-interview transcripts about IT service management vendors. It compares
-company cases, shows the exact transcript passage behind every claim, lets an analyst select findings and edit a
-conclusion, and exports a Markdown brief with citations and caveats. The interviews explain specific buying decisions;
-they cannot establish vendor market share, and the product says so wherever that question comes up.
+A research workspace over three expert interviews about IT service management (ITSM) vendors. It compares the company
+cases the experts describe, shows the exact transcript passage behind every claim, lets an analyst select findings and
+edit a conclusion, and exports a Markdown brief with citations and caveats. The interviews explain specific buying
+decisions; they cannot establish vendor market share, and the workspace says so wherever that question comes up.
 
-Three layers, each checkable on its own:
+A model proposes findings section by section; code validates every citation before storing them, and they stay
+labeled unreviewed until a person checks them. How the pieces fit is in [ARCHITECTURE.md](ARCHITECTURE.md).
 
-1. `parser.py` preserves every transcript paragraph with its source location and fingerprints in SQLite.
-2. `extract.py` has a model propose source-bound findings section by section, then validates every citation and
-   applies deterministic rules before storing them as unreviewed proposals.
-3. `dashboard.py` builds one JSON bundle from the verified passages and findings; the React app in `web/` renders it.
-   No server, and no model call at view time.
+| Folder | What is in it |
+| --- | --- |
+| [`inputs/`](inputs/) | What goes in: the three interview transcripts (DOCX, unmodified) and `manifest.json` with their SHA-256 hashes. |
+| [`gold/`](gold/) | The 18 gold cases and their rubrics, the judge's human labels, and the script that builds its calibration set. |
+| [`results/`](results/) | What came out: every extraction run's findings store, readable findings list, and gold result, with a summary. |
+| [`web/`](web/) | The dashboard; `web/src/data/bundle.json` is the built data it shows. |
+| `parser.py`, `extract.py`, `dashboard.py` | The three pipeline stages, each with its test module. |
 
 ## Run
 
-Python 3.10 or newer (verified on 3.11 and 3.13), dependencies pinned in `requirements.txt`. Node 20+ for `web/` only.
+Python 3.10 or newer (verified on 3.11), dependencies pinned in `requirements.txt`; Node 20+ for `web/`.
 
 ```sh
 python3 -m venv .venv && source .venv/bin/activate
 python -m pip install -r requirements.txt
-python parser.py && python parser.py --check          # parse and verify the transcripts
+python parser.py                                      # parse the transcripts into data/parsed/transcripts.sqlite
 python extract.py --batches                           # the extraction schedule
 python extract.py --render E1:S06                     # the exact model input for one section
 python extract.py --extract all --workers 3           # propose findings (needs XAI_API_KEY)
-python extract.py --check                             # verify stored findings; list attribution flags
-python extract.py --evaluate                          # the gold regression gate
-python extract.py --extract all --workers 3 --findings data/parsed/run-skills.sqlite \
-  --skills synthesize-research competitive-brief      # the same extraction with skill guidance
-python extract.py --compare data/parsed/run-1.6.0.sqlite data/parsed/run-skills.sqlite   # two runs side by side
-python dashboard.py --build && python dashboard.py --check
-python -m unittest -v test_parser.py test_extract.py test_dashboard.py
-cd web && npm install && npm test && npm run build && npm run dev   # http://localhost:5173/
+python dashboard.py --build --findings results/runs/1.2.0/findings.sqlite   # rebuild web/src/data/bundle.json
+cd web && npm install && npm run dev                  # http://localhost:5173/
 ```
 
-Inputs are private and git-ignored: `analysis/transcripts/manifest.json` lists each DOCX with `expert`, `source`, and
-`sha256`. For a fresh clone, copy `manifest.example.json` there and fill in the path and hash. Outputs go to
-`data/parsed/transcripts.sqlite` and a separate `data/parsed/findings.sqlite` (`--manifest`, `--database`,
-`--findings` override). `--extract` reads `XAI_API_KEY` from the environment or a git-ignored `.env`; everything else
-runs without a key. Synthetic tests run without private files; real-file tests fail rather than skip when the
-manifest's files are missing or changed.
+A fresh clone runs as is: `inputs/manifest.json` lists each transcript with its `sha256`, and the parser refuses a
+file whose hash differs; to process other interviews, point `--manifest` at your own (see `manifest.example.json`).
+New runs write to the local `data/parsed/` directory, which is not tracked. `--extract` reads `XAI_API_KEY`, and
+`--judge` reads `ANTHROPIC_API_KEY`, from the environment or a git-ignored `.env`; everything else runs without a key.
+`--manifest`, `--database`, and `--findings` override the default paths.
 
-## Evidence contract
+Inspecting and comparing runs:
 
-- **Canonical text is never normalized.** Each paragraph is a passage (`E1:B0030`) with a citation ID for nonempty
-  ones (`E1:P021`), its speaker and timestamp, section, and original XML. Every document records its source SHA-256
-  and an extraction fingerprint over all stored content and parser versions.
-- **Fail closed.** `parser.py --check` reparses the originals read-only and fails on changed inputs, tampered rows, or
-  stale derived data. `render_passages` quotes only at an expected fingerprint for every document requested.
-- **Findings are proposals bound to evidence.** Each finding names its company context, kind (`company_scale`,
-  `vendor_relationship`, `selection_criteria`, `pricing`, `implementation`, `rating`), statement, vendor and
-  relationship, evidence type, optional quantity, qualifications, and supporting, qualifying, and context passages,
-  each passage in one role. Records carry the source fingerprints they were checked against; a changed transcript
-  makes them stale, never silently relabeled.
-- **Review never inherits trust.** `extract.py --review ID reviewed|rejected` and `--edit ID --changes '{...}'` log
-  every decision; any edit leaves the record `edited` until reviewed again.
-- **Companies keep their names from evidence.** A company record stays as first proposed; a later name (the spoken
-  name of an employer the header anonymizes, a spelling variant) is an alias record accepted only when a cited passage
-  contains it.
+```sh
+python extract.py --list --findings results/runs/1.6.0-r1/findings.sqlite       # a run's findings with citations
+python extract.py --evaluate --findings results/runs/1.6.0-r1/findings.sqlite   # its gold result
+python extract.py --compare results/runs/1.6.0-r1/findings.sqlite results/runs/1.6.0-skills-r1/findings.sqlite
+```
 
-## Extraction
+## Test
 
-Each transcript section is one model call (`grok-4.6` by default; `--model` to change). The header before the first
-heading gets no call of its own because every section already carries it. Each call sees the section, the interview's
-introduction, every known company with the passages that identify it, and the most recent passage naming exactly one
-company, so a section that continues a former employer's account without naming it can still be filed correctly.
-Sections of one interview run in order, interviews in parallel, and an unchanged input is reused without a call.
+```sh
+python parser.py --check                              # reparse read-only; fail on changed inputs or tampered rows
+python extract.py --check                             # verify stored findings; list attribution flags
+python extract.py --evaluate                          # the 18-case gold gate; exits 1 until every case passes
+python extract.py --evaluate --judge                  # add the model judge's verdicts beside the gate
+python dashboard.py --check                           # the bundle still matches transcripts and findings
+pyflakes parser.py test_parser.py extract.py test_extract.py dashboard.py test_dashboard.py
+python -m unittest -v test_parser.py test_extract.py test_dashboard.py   # 83 tests
+cd web && npm test && npm run build                   # 15 Vitest tests, then type-check and bundle
+```
 
-Deterministic rules then apply before anything is stored:
+Synthetic tests build their own DOCX fixtures; real-file tests fail rather than skip when the manifest's files are
+missing or changed. The full definition of done is in [AGENTS.md](AGENTS.md).
 
-- every cited passage must have been shown to the model, be body text, and match the expected fingerprint;
-- interviewer text is never supporting evidence; it moves to context, and a finding left with no expert passage is
-  rejected;
-- quantities keep the source wording; currency is labeled `dollars`; a figure's own words set a missing unit ("seven
-  months"); only a price borrows a unit or period from the rest of its answer, and only when that answer names one
-  unit, marked as `carried`;
-- an answer on a different rating scale than its question ("1 to 7" asked, "9 out of 10" given) is labeled, never
-  rescaled.
+## Deploy
 
-`extract.py --check` also flags findings whose company disagrees with the conversation's company anchor. Flags ask
-for review; they do not fail the check.
+Not deployed. The workspace runs locally with `npm run dev`; `npm run build` produces a static site in `web/dist/`
+with no server and no model call at view time, which any static host could serve. The data it shows is
+`web/src/data/bundle.json`, built by `dashboard.py --build` from the transcripts and findings published here.
 
-## Quality gate
+## Architecture
 
-`python extract.py --evaluate` checks 18 gold cases (G01–G18) drawn from an evidence audit: current versus former
-employer, module status, interviewer premises, corrections, quantities and units, rating scales, and the market-share
-limit. The cases are the spec: a failure means the system needs fixing. Each case is scored after review and on raw
-model output alone; an interview missing from the store reports `not_run`, never a pass. The gate exits 1 until every
-case passes and refuses to run on transcripts other than the reviewed versions.
-
-Measured runs (one run each; the model is non-deterministic, so these are single samples):
-
-| Run | Model | Findings | Gold, raw output |
-| --- | --- | --- | --- |
-| Prompt 1.2.0 (current `findings.sqlite`, shown in the dashboard) | grok-4.7 | 304 | 6 of 18 (11 after review) |
-| Prompt 1.4.0 | grok-4.7 | 301 | 9 of 18 |
-| Prompt 1.5.0 | grok-4.20-0309-non-reasoning | 168 | 6 of 18 |
-
-The reasoning model took about 45 minutes a run and the non-reasoning model about 45 seconds; the fast model missed
-five cases outright, including a whole cost section. The dashboard still shows the 1.2.0 store until a new run is
-reviewed and swapped in. `grok-4.6`, now the default, sits between the two on reasoning effort; its gold result is not
-recorded yet.
-
-`--skills` appends `.claude/skills/<name>/SKILL.md` to both extraction prompts under a fixed frame: the skills say
-what is worth noticing (alternatives and why they lost, switching conditions, conflicting accounts) and never override
-the extraction rules. Each skill file's hash joins the prompt version, so an edited skill is a new run and a skill run
-never reuses a plain run's batches. `--compare BASE OTHER` prints both stores' raw gold results case by case, then
-finding counts by kind, evidence type, and section, statement length, and how many findings carry qualifications or
-quantities; the counts describe the extraction, not the market.
-
-## Dashboard
-
-`dashboard.py --build` writes `web/src/data/bundle.json` (git-ignored; it contains transcript text) after the parser
-and findings checks pass. `--check` re-renders every shipped passage and fails when the bundle no longer matches the
-transcripts or lags the findings store. The web app opens to an overview built from the checked
-bundle, with explicit limits on market-share inference and an observed company-choice table. Cases and vendor
-comparison open the existing evidence panel with each finding above its exact cited passages. Status words remain
-visible; disputed attribution is called out; the analyst brief and conclusion stay in `localStorage`; Markdown
-export carries citations, units, status, and caveats. The starter ZIP's hard-coded demo findings and browser script
-are not used by the app.
-
-## Verification
-
-83 Python tests (parser, extraction, dashboard) and 15 Vitest tests, including a rendered smoke test over the real
-bundle; `npm run build` type-checks and bundles. The definition of done is in [AGENTS.md](AGENTS.md).
-
-## Limits
-
-- Citation checks prove a passage exists and matches its version, not that it supports the statement; that is review.
-- Three findings are reviewed; everything else is a labeled model proposal.
-- Findings are extracted per section, so two accounts of one event in different sections are not linked
-  automatically (gold case G13).
-- The parser's heading and speaker rules are verified for these three files, not a general transcript format.
-
-## Next
-
-1. **Company registry first.** Settle each interview's companies, former employers, and names once, with a check that
-   a name belongs to its company, before any findings are extracted.
-2. **Smaller, question-led model calls.** Use the existing exchange chunks and the prepared questions so each call does
-   one narrow task, plus a second pass for missed facts; measure against the gold on raw output.
-3. **Repeated runs.** Report per-case pass rates across runs with intervals before adopting a prompt or model.
-4. **Review inside the dashboard,** writing to the existing review log.
-5. **Cited answers to the prepared questions,** abstaining per company when evidence is incomplete or conflicting.
+[ARCHITECTURE.md](ARCHITECTURE.md) covers the three stages and the web app, where AI is used and where code decides,
+stored versus computed data, identifiers, the gold gate with measured runs, limits, and next steps.

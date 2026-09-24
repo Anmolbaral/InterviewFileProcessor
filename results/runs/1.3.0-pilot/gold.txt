@@ -1,0 +1,50 @@
+FAIL    raw FAIL    G01/G02 current employer and Thermo Fisher stay distinct
+        E1:P021 must keep Thermo Fisher's ServiceNow deployment historical
+        judge on raw output (claude-sonnet-5, not in the gate): PASS - M1 met (E1:F001): E1:F001 states the current employer currently uses a custom ITSM, citing E1:P016 as required.; M2 met (E1:F002, E1:F018): E1:F002 (citing E1:P016) states the current employer previously used ServiceNow before switching to the custom platform, and E1:F018 (citing E1:P049) confirms ServiceNow was used before the current custom solution.; M3 met (E1:F006): E1:F006, citing E1:P021, states the expert used ServiceNow at Thermo Fisher in a very large implementation.
+FAIL    raw FAIL    G02 compliance discussion returns to Thermo Fisher
+        the return to Thermo needs a company passage under context
+        judge on raw output (claude-sonnet-5, not in the gate): PASS - M1 met (E1:F016, E1:F017): Both findings attribute the validated-system and GxP workflow advantages over Zendesk to Thermo Fisher, consistent with E1:P057.; N1 clear: Both findings explicitly label the company as Thermo Fisher (historical), not the current employer, so no violation occurs.
+NOT_RUN raw NOT_RUN G03 Thermo cost is implementation TCO
+        1 records: E1:F045 (sections not processed: E1:S07)
+        judge on raw output (claude-sonnet-5, not in the gate): PASS - M1 met (E1:F045): F045 states ServiceNow's implementation TCO was roughly double competitors', citing E1:P201 as approximate.; N1 clear: F045 presents the TCO figure as an approximation without merging it with the P110 license comparison or stating an exact ratio.
+FAIL    raw FAIL    G04 Xena/Abzena does not create two proven employers
+        Xena/Abzena should identify one ambiguous current context, found 2
+NOT_RUN raw NOT_RUN G05 module status stays installed/evaluated/considered/unpurchased
+        13 records: E1:F003, E1:F004, E1:F005, E1:F006, E1:F007, E1:F008, E1:F018, E1:F019, E1:F020, E1:F021, E1:F022, E1:F023, E1:F024 (sections not processed: E2:S02, E2:S06, E3:S02, E3:S07)
+        judge on raw output (claude-sonnet-5, not in the gate): NOT_RUN - sections not processed: E2:S02, E2:S06, E3:S02, E3:S07
+NOT_RUN raw NOT_RUN G06 future ServiceNow moves stay conditional
+        0 records:  (sections not processed: E2:S08, E3:S08)
+        judge on raw output (claude-sonnet-5, not in the gate): NOT_RUN - sections not processed: E2:S08, E3:S08
+NOT_RUN raw NOT_RUN G07/G08 interviewer premises are not supporting evidence
+        63 records: E1:F001, E1:F002, E1:F003, E1:F004, E1:F005, E1:F006, E1:F007, E1:F008, E1:F009, E1:F010, E1:F011, E1:F012, E1:F013, E1:F014, E1:F015, E1:F016, E1:F017, E1:F018, E1:F019, E1:F020, E1:F021, E1:F022, E1:F023, E1:F024, E1:F025, E1:F026, E1:F027, E1:F028, E1:F029, E1:F030, E1:F031, E1:F032, E1:F033, E1:F034, E1:F035, E1:F036, E1:F037, E1:F038, E1:F039, E1:F040, E1:F041, E1:F042, E1:F043, E1:F044, E1:F045, E1:F046, E1:F047, E1:F048, E1:F049, E1:F050, E1:F051, E1:F052, E1:F053, E1:F054, E1:F055, E1:F056, E1:F057, E1:F058, E1:F059, E1:F060, E1:F061, E1:F062, E1:F063 (sections not processed: E1:S03, E1:S04, E1:S07, E1:S09, E2:S01, E2:S02, E2:S03, E2:S04, E2:S05, E2:S06, E2:S07, E2:S08, E2:S09, E3:S01, E3:S02, E3:S03, E3:S04, E3:S05, E3:S06, E3:S07, E3:S08, E3:S09)
+PASS    raw PASS    G08 compliance and integration claims stay within the expert's answer
+        10 records: E1:F016, E1:F017, E1:F030, E1:F031, E1:F032, E1:F033, E1:F034, E1:F035, E1:F037, E1:F038
+        judge on raw output (claude-sonnet-5, not in the gate): PASS - N1 clear: Findings citing E1:P057 (F016, F017) describe only GxP-related validation and workflow capabilities, not SOX.; N2 clear: Findings citing E1:P180/E1:P188 discuss AD, Workday, Databricks, and legacy ERP integrations, none assert SAP or security-tool integrations.
+PASS    raw PASS    G09 testing-access clarification qualifies the P237 yes
+        1 records: E1:F053
+        judge on raw output (claude-sonnet-5, not in the gate): PASS - M1 met (E1:F053): F053 states they underestimated the number of business users needing to test workflows, citing E1:P241 as supporting evidence.; M2 met (E1:F053): F053's qualifications capture the initial 'yes' (E1:P237/E1:P245) together with the clarification that the surprise was about testing access rather than separate environments (E1:P243).; N1 clear (E1:F053): F053 explicitly negates this, stating the issue was not the purchase of separate non-production environments.
+NOT_RUN raw NOT_RUN G10 Thermo ranking and decisive reason remain distinct
+        E1's strict ranking puts integration before scalability; E1 later identifies scalability as the decisive reason (sections not processed: E1:S03)
+        judge on raw output (claude-sonnet-5, not in the gate): NOT_RUN - sections not processed: E1:S03
+NOT_RUN raw NOT_RUN G11 Calloway ranking and BMC choice rationale are retained
+        Calloway's five criteria must retain their reported rank order; BMC's cost/compliance balance must remain in the selection rationale (sections not processed: E2:S03)
+        judge on raw output (claude-sonnet-5, not in the gate): NOT_RUN - sections not processed: E2:S03
+PASS    raw PASS    G12 Thermo expected and actual rollout durations preserve months
+        11 records: E1:F025, E1:F026, E1:F027, E1:F028, E1:F029, E1:F039, E1:F040, E1:F041, E1:F042, E1:F043, E1:F044
+NOT_RUN raw NOT_RUN G13 BMC timing tension remains linked and unreconciled
+        E2:P089 must keep its 7-month quantity and unit; E2:P139 must keep its 2-month quantity and unit (sections not processed: E2:S05, E2:S07, E2:L01)
+        judge on raw output (claude-sonnet-5, not in the gate): NOT_RUN - sections not processed: E2:L01, E2:S05, E2:S07
+NOT_RUN raw NOT_RUN G14 license prices retain company, amount, unit, currency, and stated basis
+        0 records:  (sections not processed: E1:S03, E2:S06, E3:S06)
+NOT_RUN raw NOT_RUN G15 Thermo staffing is not full-time headcount
+        retain 3-5 employees as an allocated headcount, not an FTE figure; retain each employee's 30-40 percent time allocation; retain the use of partners for complex work (sections not processed: E1:S04)
+        judge on raw output (claude-sonnet-5, not in the gate): NOT_RUN - sections not processed: E1:S04
+NOT_RUN raw NOT_RUN G16 continuation rating preserves the 1-7 versus 9/10 mismatch
+        preserve the expert's 9/10 answer; show that the interviewer asked for a 1-7 rating (sections not processed: E1:S07)
+        judge on raw output (claude-sonnet-5, not in the gate): NOT_RUN - sections not processed: E1:S07
+NOT_RUN raw NOT_RUN G17 Ivanti products and experience are not conflated
+        0 records:  (sections not processed: E2:S03, E3:S01)
+        judge on raw output (claude-sonnet-5, not in the gate): NOT_RUN - sections not processed: E2:S03, E3:S01
+NOT_RUN raw NOT_RUN G18 no market-share percentage is inferred from interviews
+        0 records:  (sections not processed: E1:S03, E1:S04, E1:S07, E1:S09, E2:S01, E2:S02, E2:S03, E2:S04, E2:S05, E2:S06, E2:S07, E2:S08, E2:S09, E3:S01, E3:S02, E3:S03, E3:S04, E3:S05, E3:S06, E3:S07, E3:S08, E3:S09)
+3 of 18 cases pass after review, 3 on unedited model output (0 of 3 model company contexts edited; 0 of 63 model findings edited) in results/runs/1.3.0-pilot/findings.sqlite

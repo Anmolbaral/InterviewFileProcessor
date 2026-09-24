@@ -1,4 +1,5 @@
-# Private transcripts, extracted content, research notes, and local references
+# Local working files: research notes, references, and the scratch data directory. The published transcripts live in
+# inputs/, the gold material in gold/, and every run's outputs in results/.
 /analysis/
 /sources/
 /data/
@@ -7,6 +8,7 @@ ponytail-reference/
 ponytail-references/
 *.docx
 *.DOCX
+!/inputs/*.docx
 
 # Credentials and local configuration (keep example files shareable)
 .env
@@ -25,12 +27,11 @@ __pycache__/
 .coverage
 htmlcov/
 
-# Frontend dependencies, build output, and the generated data bundle (contains transcript text)
+# Frontend dependencies and build output; the data bundle in web/src/data/ is tracked so a clone runs as is
 node_modules/
 .next/
 dist/
 *.tsbuildinfo
-/web/src/data/
 
 # Local machine files
 .DS_Store

@@ -165,7 +165,7 @@ class DashboardTests(unittest.TestCase):
         self.assertEqual(validate_answer(foreign, evidence, self.transcripts).status, "withheld")
 
 
-@unittest.skipUnless(MANIFEST.is_file(), "Private transcript manifest is not configured; synthetic tests still run.")
+@unittest.skipUnless(MANIFEST.is_file(), "Transcript manifest (inputs/manifest.json) is missing; synthetic tests still run.")
 class ProvidedTranscriptDashboardTests(unittest.TestCase):
     def test_bundle_from_the_real_stores_passes_its_check(self):
         corpus, _ = run(MANIFEST, DEFAULT_DATABASE, check=True)
