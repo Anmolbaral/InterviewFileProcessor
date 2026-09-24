@@ -113,10 +113,12 @@ quantities; the counts describe the extraction, not the market.
 
 `dashboard.py --build` writes `web/src/data/bundle.json` (git-ignored; it contains transcript text) after the parser
 and findings checks pass. `--check` re-renders every shipped passage and fails when the bundle no longer matches the
-transcripts or lags the findings store. The web app opens on company cases, with a vendor comparison view, an
-evidence panel showing each finding above its cited passages, status words on every finding, a red label on disputed
-or unestablished companies, a brief with an editable conclusion kept in `localStorage`, and a Markdown export that
-carries citations, units, status, and caveats.
+transcripts or lags the findings store. The web app opens to an overview built from the checked
+bundle, with explicit limits on market-share inference and an observed company-choice table. Cases and vendor
+comparison open the existing evidence panel with each finding above its exact cited passages. Status words remain
+visible; disputed attribution is called out; the analyst brief and conclusion stay in `localStorage`; Markdown
+export carries citations, units, status, and caveats. The starter ZIP's hard-coded demo findings and browser script
+are not used by the app.
 
 ## Verification
 

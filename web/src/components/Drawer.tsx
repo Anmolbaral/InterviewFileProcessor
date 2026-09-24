@@ -26,18 +26,30 @@ export function Drawer({ open, kicker, title, onClose, children }: Props) {
     return () => document.removeEventListener("keydown", onKey);
   }, [open, onClose]);
   return (
-    <dialog ref={ref} aria-labelledby="drawer-title"
-      className="fixed inset-y-0 right-0 left-auto z-40 m-0 h-full max-h-none w-full max-w-xl overflow-y-auto border-l border-slate-200 bg-white p-0 text-slate-800 shadow-2xl">
-      <div className="flex items-start justify-between gap-3 border-b border-slate-200 bg-slate-50 px-6 py-4">
+    <dialog ref={ref} aria-labelledby="drawer-title" className="sq-drawer">
+      <div className="sq-drawer-top">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-indigo-700">{kicker}</p>
-          <h2 id="drawer-title" ref={heading} tabIndex={-1} className="mt-1 text-lg font-semibold text-slate-900 focus:outline-none">{title}</h2>
+          <p className="sq-eyebrow">{kicker}</p>
+          <h2 id="drawer-title" ref={heading} tabIndex={-1}>{title}</h2>
         </div>
-        <button type="button" onClick={onClose} aria-label="Close panel" className="rounded-full p-2 text-slate-500 hover:bg-slate-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600">
-          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+        <button type="button" onClick={onClose} aria-label="Close panel" className="sq-close">
+          <svg
+            className="h-5 w-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
         </button>
       </div>
-      <div className="p-6">{children}</div>
+      <div className="sq-drawer-content">{children}</div>
     </dialog>
   );
 }

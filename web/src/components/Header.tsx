@@ -1,9 +1,11 @@
 import type { Bundle } from "../types";
+import type { View } from "./WorkspaceNav";
 
 interface Props {
   bundle: Bundle;
   reviewed: number;
   total: number;
+  view: View;
   onToggleSidebar: () => void;
   sidebarOpen: boolean;
   topic: string;
@@ -14,28 +16,48 @@ interface Props {
   onMethods: () => void;
 }
 
-const button = "rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600";
-
-export function Header({ bundle, reviewed, total, onToggleSidebar, sidebarOpen, topic, onTopic, briefCount, onBrief, onExport, onMethods }: Props) {
+export function Header({
+  bundle, reviewed, total, view, onToggleSidebar, sidebarOpen, topic, onTopic,
+  briefCount, onBrief, onExport, onMethods,
+}: Props) {
+  const viewName = { overview: "Overview", cases: "Cases", compare: "Compare vendors" }[view];
   return (
-    <header className="z-10 border-b border-slate-200 bg-white px-4 py-4 shadow-sm md:px-8">
-      <div className="flex flex-wrap items-center gap-3">
-        <button type="button" onClick={onToggleSidebar} aria-expanded={sidebarOpen} aria-controls="sidebar" className={`${button} md:hidden`}>Sources & filters</button>
-        <div className="min-w-0 flex-1 basis-64">
+    <header className="sq-topbar">
+      <div className="sq-topbar-line">
+        <div className="sq-breadcrumb">
+          <span>Research workspace</span>
+          <span aria-hidden="true"> / </span>
+          <strong>{viewName}</strong>
+        </div>
+        <div className="sq-top-actions">
+          <button
+            type="button"
+            onClick={onToggleSidebar}
+            aria-expanded={sidebarOpen}
+            aria-controls="sidebar"
+            className="sq-button"
+          >
+            Sources &amp; filters
+          </button>
+          <button type="button" onClick={onMethods} className="sq-button">Methods</button>
+          <button type="button" onClick={onBrief} className="sq-button">Brief (analyst draft) · {briefCount}</button>
+          <button type="button" onClick={onExport} className="sq-button sq-button-primary">Export brief</button>
+        </div>
+      </div>
+      <div className="sq-toolbar">
+        <div className="sq-topic-select">
           <label className="sr-only" htmlFor="topic">Explore evidence by topic</label>
-          <select id="topic" value={topic} onChange={(e) => onTopic(e.target.value)}
-            className="block w-full max-w-2xl rounded-md border border-slate-300 bg-slate-50 py-2 pl-3 pr-8 text-sm focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500">
+          <select id="topic" value={topic} onChange={(e) => onTopic(e.target.value)}>
             <option value="">Explore evidence by topic · all extracted findings</option>
             {bundle.questions.map((q) => <option key={q.id} value={q.id}>{q.text}</option>)}
           </select>
         </div>
-        <button type="button" onClick={onMethods} className={button}>Methods</button>
-        <button type="button" onClick={onBrief} className={button}>Brief (analyst draft) · {briefCount}</button>
-        <button type="button" onClick={onExport} className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600">Export brief</button>
+        <p className="sq-status">
+          {Object.keys(bundle.documents).length} interviews · {total} source-linked findings
+        </p>
       </div>
-      <p className="mt-3 text-sm text-slate-600">
-        <span className="font-medium text-slate-800">These three interviews explain specific buying decisions. They do not measure vendor market share.</span>
-        {" "}{reviewed} of {total} extracted findings reviewed so far; the rest are unreviewed model proposals.
+      <p className="sq-review-line">
+        {reviewed} of {total} findings reviewed; other records remain marked as proposals or analyst edits.
       </p>
     </header>
   );
