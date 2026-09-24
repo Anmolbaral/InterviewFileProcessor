@@ -1061,7 +1061,8 @@ class ProvidedTranscriptExtractionTests(unittest.TestCase):
 
         valid = seeded("prompt-as-context", ["E1:P147"], ["E1:P021", "E1:P145"])
         valid_results = {name: status for name, status, _ in evaluate(valid, self.connection)}
-        self.assertEqual(valid_results["G07/G08 interviewer premises are not supporting evidence"], "pass")
+        # not a failure; and not a pass either, because this seed covers one interview, not every section
+        self.assertEqual(valid_results["G07/G08 interviewer premises are not supporting evidence"], "not_run")
 
     def test_ivanti_guard_requires_product_and_prior_deployment_details(self):
         documents = {document.id: document for document in self.corpus.documents}
@@ -1240,6 +1241,140 @@ class ProvidedTranscriptExtractionTests(unittest.TestCase):
                             restored += 1
                 self.assertEqual(restored, expected_collisions)
                 self.assertEqual(path.read_bytes(), original)
+
+    def gold_store(self, name, contexts, findings, *, batches=None):
+        """A store for gold evaluation: an analyst seed, or a model run whose section outcomes are `batches`."""
+        versions = {d.id: SourceVersion(source_sha256=d.source_sha256, extraction_sha256=d.extraction_sha256)
+                    for d in self.corpus.documents}
+        if batches is None:
+            run = ExtractionRun(id=name, model="none", prompt_version="analyst-seed", source_versions=versions)
+        else:
+            outcomes = [BatchOutcome(batch_id=batch_id, status=status, input_passage_ids=[],
+                                     input_fingerprint=FP, error="HTTP 503" if status == "failed" else None,
+                                     finding_ids=[f.id for f in findings if status == "findings"
+                                                  and f.document_id == batch_id.split(":")[0]][:1])
+                        for batch_id, status in batches.items()]
+            run = ExtractionRun(id=name, model="test-model", prompt_version="test", source_versions=versions,
+                                batches=outcomes)
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        store = open_findings(Path(directory.name) / f"{name}.sqlite")
+        self.addCleanup(store.close)
+        save_run(store, run, contexts, findings)
+        return {case: (status, detail) for case, status, detail in evaluate(store, self.connection)}
+
+    def gold_records(self):
+        """Contexts for the three interviews, and a finding factory keyed by citation IDs."""
+        documents = {d.id: d for d in self.corpus.documents}
+        physical = dict(self.connection.execute("SELECT citation_id, id FROM passages WHERE citation_id IS NOT NULL"))
+
+        def version(document_id):
+            return dict(source_sha256=documents[document_id].source_sha256,
+                        extraction_sha256=documents[document_id].extraction_sha256)
+
+        contexts = [
+            CompanyContext(id="E1:C01", document_id="E1", company_name="Xena", aliases=["Abzena"],
+                           employment="current", supporting=[physical["E1:P016"]], origin="model", **version("E1")),
+            CompanyContext(id="E1:C02", document_id="E1", company_name="Thermo Fisher", employment="historical",
+                           supporting=[physical["E1:P021"]], origin="model", **version("E1")),
+            CompanyContext(id="E2:C01", document_id="E2", company_name="Calloway Biosciences", employment="current",
+                           supporting=[physical["E2:P015"]], origin="model", **version("E2")),
+            CompanyContext(id="E3:C01", document_id="E3", company_name="Solara Renewables", employment="current",
+                           supporting=[physical["E3:P017"]], origin="model", **version("E3")),
+            CompanyContext(id="E3:C02", document_id="E3", company_name="Industrial Services Company",
+                           employment="historical", supporting=[physical["E3:P017"]], origin="model",
+                           **version("E3"))]
+        numbers: dict[str, int] = {}
+
+        def finding(context_id, supporting, statement, **extra):
+            document = context_id.split(":")[0]
+            numbers[document] = numbers.get(document, 0) + 1
+            for role in ("qualifying", "context"):
+                if role in extra:
+                    extra[role] = [physical[c] for c in extra[role]]
+            return Finding(**{**dict(id=f"{document}:F{numbers[document]:03d}", document_id=document,
+                                     context_id=context_id, kind="implementation", statement=statement,
+                                     evidence_type="firsthand_report", supporting=[physical[c] for c in supporting],
+                                     origin="model", **version(document)), **extra})
+
+        return contexts, finding
+
+    def test_gold_cases_whose_sections_did_not_complete_report_not_run(self):
+        contexts, finding = self.gold_records()
+        thermo = finding("E1:C02", ["E1:P021"], "Thermo Fisher ran ServiceNow and had started implementing GRC.",
+                         kind="vendor_relationship", vendor="ServiceNow", relationship="deployed")
+        partial = self.gold_store("partial", contexts, [thermo], batches={"E1:S02": "findings", "E1:S03": "failed"})
+        for case in ("G15 Thermo staffing is not full-time headcount",  # E1:S05 never ran
+                     "G10 Thermo ranking and decisive reason remain distinct",  # E1:S03 failed
+                     "G01/G02 current employer and Thermo Fisher stay distinct",  # E1:S01 never ran
+                     "G14 license prices retain company, amount, unit, currency, and stated basis",
+                     "G07/G08 interviewer premises are not supporting evidence",  # needs every section
+                     "G18 no market-share percentage is inferred from interviews"):
+            with self.subTest(case=case):
+                self.assertEqual(partial[case][0], "not_run", partial[case][1])
+        physical = dict(self.connection.execute("SELECT citation_id, id FROM passages WHERE citation_id IS NOT NULL"))
+        staffing_section = next(b.id for b in self.batches.values() if physical["E1:P171"] in b.passage_ids)
+        self.assertIn(f"sections not processed: {staffing_section}",
+                      partial["G15 Thermo staffing is not full-time headcount"][1])
+        self.assertNotIn("missing E1", partial["G14 license prices retain company, amount, unit, currency, and "
+                                               "stated basis"][1])
+        complete = self.gold_store("complete", contexts, [thermo], batches={
+            batch.id: "findings" if batch.id == "E1:S02" else "no_findings" for batch in model_batches(
+                list(self.batches.values()))})
+        self.assertEqual(complete["G15 Thermo staffing is not full-time headcount"][0], "absent")
+        self.assertEqual(complete["G07/G08 interviewer premises are not supporting evidence"][0], "pass")
+
+    def test_gold_accepts_correct_wording_it_used_to_flag(self):
+        contexts, finding = self.gold_records()
+        aiops = finding("E2:C01", ["E2:P022"], "Calloway Biosciences is evaluating the full AIOps suite and has not "
+                        "turned it on yet.", kind="vendor_relationship", vendor="BMC Helix", relationship="evaluated")
+        staffing = [
+            finding("E1:C02", ["E1:P171"], "About 3-5 employees maintained ServiceNow at Thermo Fisher.",
+                    quantity=Quantity(raw="about 3-5 employees", low=3, high=5, approximate=True,
+                                      unit="employees", basis="to maintain the system"),
+                    qualifications=["These are part-time allocations, not full-time equivalents."]),
+            finding("E1:C02", ["E1:P171"], "Each spent around 30-40 percent of their time on it.",
+                    quantity=Quantity(raw="around 30-40%", low=30, high=40, approximate=True, unit="percent")),
+            finding("E1:C02", ["E1:P171"], "Partners were engaged for major upgrades or complex flows.")]
+        ivanti = finding("E3:C02", ["E3:P017"], "The larger industrial services company ran Ivanti Service Manager, "
+                         "formerly Ivanti Heat, on-prem.", kind="vendor_relationship",
+                         vendor="Ivanti Service Manager", relationship="deployed")
+        neurons = finding("E2:C01", ["E2:P039"], "Calloway evaluated Ivanti Neurons for ITSM.",
+                          kind="vendor_relationship", vendor="Ivanti Neurons", relationship="evaluated")
+        returned = finding("E1:C02", ["E1:P057"], "ServiceNow gave Thermo Fisher validated GxP change workflows.",
+                           context=["E1:P055"])
+        reporting = finding("E3:C01", ["E3:P127"], "Solara builds a SOC 2 audit report manually in Excel.",
+                            qualifying=["E3:P131"], qualifications=[
+                                "Native reporting does not flex without the analytics add-on, which Solara has not "
+                                "purchased."])
+        results = self.gold_store("wording", contexts, [aiops, *staffing, ivanti, neurons, returned, reporting])
+        modules = results["G05 module status stays installed/evaluated/considered/unpurchased"][1]
+        self.assertNotIn("AIOps", modules)
+        self.assertNotIn("analytics add-on", modules)
+        for case in ("G15 Thermo staffing is not full-time headcount",
+                     "G17 Ivanti products and experience are not conflated",
+                     "G02 compliance discussion returns to Thermo Fisher"):
+            with self.subTest(case=case):
+                self.assertEqual(results[case][0], "pass", results[case][1])
+
+    def test_gold_still_fails_the_errors_behind_the_relaxed_checks(self):
+        contexts, finding = self.gold_records()
+        aiops = finding("E2:C01", ["E2:P022"], "Calloway Biosciences turned on the full AIOps suite.",
+                        kind="vendor_relationship", vendor="BMC Helix", relationship="deployed")
+        fte = finding("E1:C02", ["E1:P171"], "About 3-5 full-time employees maintained ServiceNow, with partners.",
+                      quantity=Quantity(raw="about 3-5 employees", low=3, high=5, basis="employees"))
+        share = finding("E1:C02", ["E1:P171"], "Each spent 30-40 percent of their time.",
+                        quantity=Quantity(raw="30-40%", low=30, high=40, unit="percent"))
+        ivanti = finding("E3:C01", ["E3:P017"], "Solara ran Ivanti Service Manager, formerly Ivanti Heat, on-prem.",
+                         kind="vendor_relationship", vendor="Ivanti Service Manager", relationship="deployed")
+        returned = finding("E1:C02", ["E1:P057"], "ServiceNow gave Thermo Fisher validated GxP change workflows.")
+        results = self.gold_store("errors", contexts, [aiops, fte, share, ivanti, returned])
+        self.assertIn("AIOps", results["G05 module status stays installed/evaluated/considered/unpurchased"][1])
+        for case in ("G15 Thermo staffing is not full-time headcount",
+                     "G17 Ivanti products and experience are not conflated",
+                     "G02 compliance discussion returns to Thermo Fisher"):
+            with self.subTest(case=case):
+                self.assertEqual(results[case][0], "fail", results[case][1])
 
 if __name__ == "__main__":
     unittest.main()

@@ -677,10 +677,15 @@ PRICE_GOLD = [
 ]
 
 
-CASE_DOCUMENTS = {"G01/G02": ("E1",), "G02": ("E1",), "G03": ("E1",), "G04": ("E1",), "G05": ("E1", "E2", "E3"),
-                  "G06": ("E2", "E3"), "G08": ("E1",), "G09": ("E1",), "G10": ("E1",), "G11": ("E2",),
-                  "G12": ("E1",), "G13": ("E2",), "G14": ("E1", "E2", "E3"), "G15": ("E1",), "G16": ("E1",),
-                  "G17": ("E2", "E3")}  # interviews each case reads; G07 and G18 read every live finding
+CASE_PASSAGES = {  # citations each case reads; a case is scored only once every section holding them completed
+    "G01/G02": ("E1:P016", "E1:P021"), "G02": ("E1:P057",), "G03": ("E1:P201",), "G04": ("E1:P016", "E1:P049"),
+    "G05": ("E1:P021", "E1:P049", "E2:P022", "E2:P114", "E3:P022", "E3:P131"),
+    "G06": ("E2:P156", "E3:P140", "E3:P144"), "G08": ("E1:P057", "E1:P180", "E1:P188"),
+    "G09": ("E1:P237", "E1:P241", "E1:P243", "E1:P245"), "G10": ("E1:P086", "E1:P102"),
+    "G11": ("E2:P047", "E2:P055"), "G12": ("E1:P176", "E1:P192"), "G13": ("E2:P089", "E2:P139"),
+    "G14": tuple(dict.fromkeys(row[1] for row in PRICE_GOLD)), "G15": ("E1:P171",), "G16": ("E1:P252", "E1:P254"),
+    "G17": ("E2:P039", "E3:P017")}  # G03 also reads the THERMO_SECTIONS ranges; G07 and G18 read every section
+GUARDED_CASES = {"G05", "G06", "G07/G08", "G14", "G17", "G18"}  # each check runs only once its own section completed
 
 
 def evaluate(store: sqlite3.Connection, transcripts: sqlite3.Connection, *, raw: bool = False
@@ -700,12 +705,28 @@ def evaluate(store: sqlite3.Connection, transcripts: sqlite3.Connection, *, raw:
 
     contexts = {c.id: c for c in load_records(store, CompanyContext) if scored(c)}
     findings = [f for f in load_records(store, Finding) if scored(f)]
-    ran = ({outcome.batch_id.split(":")[0] for r in load_runs(store) for outcome in r.batches}
-           | {record.document_id for record in [*load_records(store, CompanyContext), *load_records(store, Finding)]})
     passage_rows = read_rows(
         transcripts, "SELECT id, citation_id, speaker_label FROM passages WHERE citation_id IS NOT NULL")
     citation = {row["id"]: row["citation_id"] for row in passage_rows}
+    physical = {row["citation_id"]: row["id"] for row in passage_rows}
     speaker = {row["id"]: row["speaker_label"] for row in passage_rows}
+    batches = build_batches(transcripts)
+    section = {passage_id: batch.id for batch in batches for passage_id in batch.passage_ids}
+    runs = load_runs(store)
+    completed = {o.batch_id for r in runs if r.model != "none" for o in r.batches if o.status != "failed"}
+    # ponytail: an analyst seed has no section outcomes; it covers the interviews it holds records for
+    seeds = [r.id for r in runs if r.model == "none"]
+    seeded = {row["document_id"] for table in ("company_contexts", "findings") for row in read_rows(
+        store, f"SELECT document_id FROM {table} WHERE run_id IN ({', '.join('?' * len(seeds))})", *seeds)}
+
+    def covered(batch_id: str) -> bool:
+        return batch_id in completed or batch_id.split(":")[0] in seeded
+
+    def section_of(citation_id: str) -> str:  # an unresolvable citation names itself and never counts as processed
+        return section.get(physical.get(citation_id, ""), citation_id)
+
+    def processed(citation_id: str) -> bool:
+        return covered(section_of(citation_id))
 
     def cited(record: Finding, role: str = "all") -> set[str]:
         ids = record.passage_ids if role == "all" else getattr(record, role)
@@ -736,15 +757,19 @@ def evaluate(store: sqlite3.Connection, transcripts: sqlite3.Connection, *, raw:
         return " ".join(" ".join([f.statement, *f.qualifications]).lower() for f in records)
 
     def result(name: str, relevant: list[Finding] | list[CompanyContext], problems: list[str], *,
-               required: bool = True) -> tuple[str, str, str]:
-        documents = CASE_DOCUMENTS.get(name.split()[0], ())
-        missing = [d for d in documents if d not in ran]
+               required: bool = True, citations: tuple[str, ...] = ()) -> tuple[str, str, str]:
+        """A case with an unprocessed section is not_run, except that a guarded case (one that only checks
+        processed sections, or looks for violations) still fails on a problem it found in records it has."""
+        case = name.split()[0]
+        sections = ([b.id for b in model_batches(batches)] if case in ("G07/G08", "G18") else
+                    list(dict.fromkeys(section_of(c) for c in (*CASE_PASSAGES[case], *citations))))
         ids = [item.id for item in relevant]
         detail = "; ".join(problems) or f"{len(ids)} records: {', '.join(ids)}"
-        if missing and len(missing) == len(documents):
-            return name, "not_run", f"not extracted into this store: {', '.join(missing)}"
-        status = "absent" if required and not relevant else "fail" if problems else "not_run" if missing else "pass"
-        return name, status, detail + (f" (not extracted: {', '.join(missing)})" if missing else "")
+        if missing := [s for s in sections if not covered(s)]:
+            status = "fail" if problems and relevant and case in GUARDED_CASES else "not_run"
+            return name, status, f"{detail} (sections not processed: {', '.join(missing)})"
+        status = "absent" if required and not relevant else "fail" if problems else "pass"
+        return name, status, detail
 
     def has_ordered_phrases(text: str, phrases: list[str]) -> bool:
         cursor = -1
@@ -785,7 +810,7 @@ def evaluate(store: sqlite3.Connection, transcripts: sqlite3.Connection, *, raw:
     returned = at("E1", "E1:P057")
     return_problems = [f"{f.id} is not attached to a historical Thermo Fisher context"
                        for f in returned if not is_thermo(f)]
-    if returned and not any({"E1:P021", "E1:P047"} & (cited(f, "context") | cited(f, "qualifying"))
+    if returned and not any({"E1:P021", "E1:P047", "E1:P055"} & (cited(f, "context") | cited(f, "qualifying"))
                             for f in returned):
         return_problems.append("the return to Thermo needs a company passage under context")
     cases.append(result("G02 compliance discussion returns to Thermo Fisher", returned, return_problems))
@@ -808,7 +833,9 @@ def evaluate(store: sqlite3.Connection, transcripts: sqlite3.Connection, *, raw:
                                                     for term in ("tco", "total cost of ownership"))))
     if not double_cost:
         tco_problems.append("E1:P201 must preserve ServiceNow's roughly double implementation cost vs competitors")
-    cases.append(result("G03 Thermo cost is implementation TCO", tco, tco_problems))
+    cases.append(result("G03 Thermo cost is implementation TCO", tco, tco_problems, citations=tuple(
+        c for c in physical if c.startswith("E1:P") and section.get(physical[c]) and any(
+            low <= paragraph_number(c) <= high for low, high in THERMO_SECTIONS))))
 
     # G04: preserve both transcript names on one unresolved current-employer context.
     named_current = [c for c in contexts.values() if c.document_id == "E1" and c.employment == "current"
@@ -827,27 +854,31 @@ def evaluate(store: sqlite3.Connection, transcripts: sqlite3.Connection, *, raw:
                     ("E1:P021", "E1:P049", "E2:P022", "E2:P114", "E3:P022", "E3:P131"))]
     module_problems = []
     thermo_modules = at("E1", "E1:P021")
-    if "E1" in ran and not any("grc" in f.statement.lower() and "started implementing" in f.statement.lower()
+    if processed("E1:P021") and not any("grc" in f.statement.lower() and "started implementing" in f.statement.lower()
                for f in thermo_modules):
         module_problems.append("Thermo's GRC status is 'started implementing', not a confirmed installed module")
     assets = [f for f in at("E1", "E1:P049") if f.vendor and "servicenow" in f.vendor.lower()
               and "asset" in f.statement.lower()]
-    if "E1" in ran and (not assets or any(f.relationship == "deployed" for f in assets)):
+    if processed("E1:P049") and not assets:
+        module_problems.append("retain the possible ServiceNow asset-management module at E1:P049")
+    if any(f.relationship == "deployed" for f in assets):
         module_problems.append("the possible ServiceNow asset-management module must not be marked deployed")
     aiops = [f for f in at("E2", "E2:P022") if "aiops" in f.statement.lower()]
-    if "E2" in ran and not any("evaluat" in f.statement.lower() and "not turned on" in f.statement.lower()
-                               for f in aiops):
+    if processed("E2:P022") and not any(
+            "evaluat" in f.statement.lower()
+            and re.search(r"(?:\bnot\b|n't\b)(?:\W+\w+){0,3}?\W+turned\b(?:\W+\w+)?\W+on\b", f.statement.lower())
+            for f in aiops):
         module_problems.append("Calloway's AIOps is being evaluated and is not turned on")
     workplace = at("E2", "E2:P114")
-    if "E2" in ran and ("added mid-implementation" not in record_text(workplace)
+    if processed("E2:P114") and ("added mid-implementation" not in record_text(workplace)
                         or "separate sku" not in record_text(workplace)):
         module_problems.append("the Digital Workplace mobile SKU was added mid-implementation")
     solara_modules = at("E3", "E3:P022")
-    if "E3" in ran and not any("project module" in f.statement.lower() and "turned on" in f.statement.lower()
+    if processed("E3:P022") and not any("project module" in f.statement.lower() and "turned on" in f.statement.lower()
                                for f in solara_modules):
         module_problems.append("Solara's Project module was recently turned on")
-    analytics = record_text(at("E3", "E3:P131"))
-    if "E3" in ran and ("analytics add-on" not in analytics or not any(
+    analytics = record_text([*at("E3", "E3:P131"), *at("E3", "E3:P131", "qualifying")])
+    if processed("E3:P131") and ("analytics add-on" not in analytics or not any(
             phrase in analytics for phrase in ("not purchased", "haven't purchased", "have not purchased"))):
         module_problems.append("Solara's analytics add-on has not been purchased")
     cases.append(result("G05 module status stays installed/evaluated/considered/unpurchased", g05_relevant,
@@ -859,9 +890,9 @@ def evaluate(store: sqlite3.Connection, transcripts: sqlite3.Connection, *, raw:
     future_problems = [f"{f.id} must remain hypothetical, not {f.relationship}/{f.evidence_type}"
                        for f in future if (f.relationship is not None and f.relationship != "hypothetical")
                        or f.evidence_type != "hypothetical"]
-    if "E2" in ran and not any(is_calloway(f) for f in future):
+    if processed("E2:P156") and not any(is_calloway(f) for f in future):
         future_problems.append("retain Calloway's conditional future ServiceNow possibility")
-    if "E3" in ran and not any(is_solara(f) for f in future):
+    if processed("E3:P140") and processed("E3:P144") and not any(is_solara(f) for f in future):
         future_problems.append("retain Solara's conditional future ServiceNow possibility")
     for f in future:
         if not re.search(r"\b(?:if|would|could|might|consider|re-evaluate)\b", record_text([f])):
@@ -987,7 +1018,7 @@ def evaluate(store: sqlite3.Connection, transcripts: sqlite3.Connection, *, raw:
     price_problems = []
     expected_employment = {"E1": "historical", "E2": "current", "E3": "current"}
     for doc, citation_id, vendor, value, low, high, unit, basis in PRICE_GOLD:
-        if doc not in ran:
+        if not processed(citation_id):
             continue
         matches = [f for f in at(doc, citation_id) if f.kind == "pricing" and f.vendor
                    and vendor in f.vendor.lower() and f.quantity]
@@ -1018,13 +1049,15 @@ def evaluate(store: sqlite3.Connection, transcripts: sqlite3.Connection, *, raw:
                   and f.quantity.unit == "percent"]
     staffing_text = record_text(staffing)
     staffing_problems = []
-    if not people or not any("employee" in (f.quantity.basis or "").lower() for f in people):
+    if not people or not any("employee" in " ".join([f.quantity.raw, f.quantity.unit or "", f.quantity.basis or ""])
+                             .lower() for f in people):
         staffing_problems.append("retain 3-5 employees as an allocated headcount, not an FTE figure")
     if not allocation:
         staffing_problems.append("retain each employee's 30-40 percent time allocation")
     if "partner" not in staffing_text:
         staffing_problems.append("retain the use of partners for complex work")
-    if re.search(r"\b(?:full[- ]time|fte)\b", staffing_text):
+    if any(asserts(" ".join([f.statement, *f.qualifications]), term) for f in staffing
+           for term in ("full-time", "full time", "fte")):
         staffing_problems.append("do not describe the 3-5 employees as full-time equivalents")
     if any(not is_thermo(f) for f in staffing):
         staffing_problems.append("the staffing account belongs to historical Thermo Fisher")
@@ -1048,15 +1081,16 @@ def evaluate(store: sqlite3.Connection, transcripts: sqlite3.Connection, *, raw:
     e2_ivanti = [f for f in at("E2", "E2:P039") if f.vendor and "ivanti neurons" in f.vendor.lower()]
     ivanti_problems = []
     e3_ivanti_text = record_text(e3_ivanti)
-    if "E3" in ran:
-        if not any(f.relationship == "previously_used" and context(f) and context(f).employment == "historical"
-                   for f in e3_ivanti):
+    if processed("E3:P017"):
+        # deployed or previously_used: leaving an employer is not the company dropping its platform (see PROMPT)
+        if not any(f.relationship in ("deployed", "previously_used") and context(f)
+                   and context(f).employment == "historical" for f in e3_ivanti):
             ivanti_problems.append("Expert 3's earlier on-prem Ivanti Service Manager/Heat must remain prior use")
         if "heat" not in e3_ivanti_text:
             ivanti_problems.append("retain Ivanti Heat as the former product name")
         if not any(term in e3_ivanti_text for term in ("on-prem", "on prem", "on premises")):
             ivanti_problems.append("retain that Expert 3's previous Ivanti deployment was on-prem")
-    if "E2" in ran and not any(f.relationship == "evaluated" and is_calloway(f)
+    if processed("E2:P039") and not any(f.relationship == "evaluated" and is_calloway(f)
                                for f in e2_ivanti):
         ivanti_problems.append("Expert 2's Ivanti Neurons must remain an evaluated alternative")
     cases.append(result("G17 Ivanti products and experience are not conflated", [*e3_ivanti, *e2_ivanti],
