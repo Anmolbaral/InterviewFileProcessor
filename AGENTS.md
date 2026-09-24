@@ -112,6 +112,9 @@ Skills package expert procedures and are invoked with the Skill tool or `/name`.
 | Skill | Use it when |
 | --- | --- |
 | `systematic-debugging`, `verification-before-completion`, `test-driven-development` (project) | See Working practices. |
+| `synthesize-research` (project, imported) | Cross-interview themes, triangulation, and tensions built from reviewed findings. |
+| `competitive-brief` (project, imported) | Vendor strengths, weaknesses, and win/loss reasons as the experts reported them. |
+| `validate-data` (project, imported) | QA of an analysis or brief before it is shown: framing, denominators, and conclusions against evidence. |
 | `claude-api` | Before any code or answer involving Claude models, pricing, limits, or caching. Never from memory. |
 | `code-review` | Before committing a change to `parser.py`, `extract.py`, `dashboard.py`, or their tests. |
 | `simplify` | After tests pass, to cut duplication or over-building. |
