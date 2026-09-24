@@ -2,6 +2,8 @@
 
 The 18 regression cases the extraction must pass (`python extract.py --evaluate`). The deterministic checks live in `evaluate()` in [`extract.py`](../extract.py); the meaning each case checks is the rubric below (`GOLD_RUBRICS`, rubric 1.0.0), which the model judge scores and the extractor never sees. Passages are citation IDs in the transcripts in [`inputs/`](../inputs/). Results for every run are in [results/README.md](../results/README.md).
 
+The cases come from the [evidence audit](evidence-audit.md), a full read of the three interviews. Its `E1:P021`-style paragraph IDs are the same citation IDs the parser assigns; the `.txt` extracts it mentions were an exploratory step and are not published.
+
 ## G01/G02 current employer and Thermo Fisher stay distinct
 
 Scored once every section holding E1:P016, E1:P021, E1:P049 has run.

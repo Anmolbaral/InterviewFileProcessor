@@ -11,7 +11,7 @@ labeled unreviewed until a person checks them. How the pieces fit is in [ARCHITE
 | Folder | What is in it |
 | --- | --- |
 | [`inputs/`](inputs/) | What goes in: the three interview transcripts (DOCX, unmodified) and `manifest.json` with their SHA-256 hashes. |
-| [`gold/`](gold/) | The 18 gold cases and their rubrics, the judge's human labels, and the script that builds its calibration set. |
+| [`gold/`](gold/) | The evidence audit, the 18 gold cases drawn from it with their rubrics, the judge's human labels, and the script that builds its calibration set. |
 | [`results/`](results/) | What came out: every extraction run's findings store, readable findings list, and gold result, with a summary. |
 | [`web/`](web/) | The dashboard; `web/src/data/bundle.json` is the built data it shows. |
 | `parser.py`, `extract.py`, `dashboard.py` | The three pipeline stages, each with its test module. |
