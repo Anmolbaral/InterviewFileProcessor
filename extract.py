@@ -27,7 +27,7 @@ from parser import (BASE, DEFAULT_DATABASE, DEFAULT_MANIFEST, INTERVIEWER, Recor
 DEFAULT_FINDINGS = BASE / "data/parsed/findings.sqlite"
 CONTRACT_VERSION = "1.3.0"  # record shapes and validation rules; bump when either changes
 PROMPT_VERSION = "1.5.0"  # the system prompt below; bump on any wording change so runs stay comparable
-DEFAULT_MODEL = "grok-4.20-0309-non-reasoning"  # fast; the reasoning grok-4.7 found more facts but took ~45 min a run
+DEFAULT_MODEL = "grok-4.6"
 XAI_URL = "https://api.x.ai/v1/chat/completions"  # stateless; the Responses endpoint stores prompts by default
 DEFAULT_ENV = BASE / ".env"
 PROMPT = """You extract reviewable findings from one section of an expert interview about IT service management (ITSM) \
